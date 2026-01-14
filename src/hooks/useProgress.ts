@@ -32,7 +32,7 @@ const DEFAULT_PROGRESS: Progress = {
     lesson2: { completed: false, score: 0, assessmentCompleted: false },
     lesson3: { completed: false, score: 0, assessmentCompleted: false },
   },
-  unlockedTabs: ['welcome', 'pretest'],
+  unlockedTabs: ['welcome', 'pretest', 'lesson1', 'lesson2', 'lesson3'],
   totalProgress: 0,
 };
 
