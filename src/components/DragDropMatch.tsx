@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, RotateCcw, Sparkles } from 'lucide-react';
+import { CheckCircle, RotateCcw, Sparkles, GripVertical } from 'lucide-react';
 
 interface MatchItem {
   id: string;
@@ -16,32 +16,54 @@ interface DragDropMatchProps {
 export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) {
   const [terms, setTerms] = useState<MatchItem[]>([]);
   const [matches, setMatches] = useState<Record<string, string>>({});
-  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
-    // Shuffle terms
     setTerms([...items].sort(() => Math.random() - 0.5));
   }, [items]);
 
-  const handleDragStart = (id: string) => {
-    setDraggedItem(id);
+  // Handle tap/click on a term
+  const handleTermClick = (id: string) => {
+    setSelectedTerm(selectedTerm === id ? null : id);
   };
 
-  const handleDrop = (definitionId: string) => {
-    if (!draggedItem) return;
+  // Handle tap/click on a drop zone
+  const handleDropZoneClick = (definitionId: string) => {
+    if (!selectedTerm) return;
     
-    // Check if this slot already has an item
+    // Remove any existing match in this slot
     const existingMatch = Object.entries(matches).find(([_, def]) => def === definitionId);
     if (existingMatch) {
-      // Remove existing match
       const newMatches = { ...matches };
       delete newMatches[existingMatch[0]];
       setMatches(newMatches);
     }
     
-    setMatches((prev) => ({ ...prev, [draggedItem]: definitionId }));
-    setDraggedItem(null);
+    setMatches((prev) => ({ ...prev, [selectedTerm]: definitionId }));
+    setSelectedTerm(null);
+  };
+
+  // Also support drag for desktop
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData('text/plain', id);
+    setSelectedTerm(id);
+  };
+
+  const handleDrop = (e: React.DragEvent, definitionId: string) => {
+    e.preventDefault();
+    const termId = e.dataTransfer.getData('text/plain');
+    if (!termId) return;
+    
+    const existingMatch = Object.entries(matches).find(([_, def]) => def === definitionId);
+    if (existingMatch) {
+      const newMatches = { ...matches };
+      delete newMatches[existingMatch[0]];
+      setMatches(newMatches);
+    }
+    
+    setMatches((prev) => ({ ...prev, [termId]: definitionId }));
+    setSelectedTerm(null);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -63,6 +85,7 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
   const reset = () => {
     setMatches({});
     setCompleted(false);
+    setSelectedTerm(null);
     setTerms([...items].sort(() => Math.random() - 0.5));
   };
 
@@ -76,6 +99,12 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
         {title}
       </h3>
 
+      {!completed && (
+        <p className="text-sm text-muted-foreground bg-primary/5 p-3 rounded-lg">
+          📱 <strong>Tap</strong> a term below, then <strong>tap</strong> the matching definition to connect them.
+        </p>
+      )}
+
       {completed && (
         <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 text-center bounce-success">
           <CheckCircle className="w-8 h-8 text-primary mx-auto mb-2" />
@@ -83,36 +112,48 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
         </div>
       )}
 
-      {/* Draggable Terms */}
+      {/* Clickable Terms */}
       <div className="p-4 rounded-xl bg-muted/50 min-h-[80px]">
-        <p className="text-xs text-muted-foreground mb-2">Drag items to match:</p>
+        <p className="text-xs text-muted-foreground mb-2">Select a term:</p>
         <div className="flex flex-wrap gap-2">
           {availableTerms.map((item) => (
-            <div
+            <button
               key={item.id}
+              type="button"
               draggable
-              onDragStart={() => handleDragStart(item.id)}
-              className="drag-item text-sm"
+              onDragStart={(e) => handleDragStart(e, item.id)}
+              onClick={() => handleTermClick(item.id)}
+              className={`drag-item text-sm flex items-center gap-2 ${
+                selectedTerm === item.id 
+                  ? 'border-primary bg-primary/10 ring-2 ring-primary ring-offset-2' 
+                  : ''
+              }`}
             >
+              <GripVertical className="w-4 h-4 text-muted-foreground" />
               {item.term}
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Drop Zones */}
+      {/* Drop Zones - now clickable */}
       <div className="space-y-3">
+        <p className="text-xs text-muted-foreground">Then tap where it belongs:</p>
         {items.map((item) => {
           const matchedTermId = Object.entries(matches).find(([_, def]) => def === item.id)?.[0];
           const matchedTerm = terms.find((t) => t.id === matchedTermId);
           const correct = matchedTermId ? isCorrect(matchedTermId) : null;
 
           return (
-            <div
+            <button
               key={item.id}
-              onDrop={() => handleDrop(item.id)}
+              type="button"
+              onClick={() => handleDropZoneClick(item.id)}
+              onDrop={(e) => handleDrop(e, item.id)}
               onDragOver={handleDragOver}
-              className={`drop-zone flex items-center gap-3 ${
+              className={`drop-zone w-full flex items-center gap-3 text-left ${
+                selectedTerm ? 'cursor-pointer hover:border-primary hover:bg-primary/5' : ''
+              } ${
                 matchedTerm 
                   ? correct 
                     ? 'success' 
@@ -134,22 +175,29 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
                     {correct && <CheckCircle className="w-4 h-4 inline ml-1" />}
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">Drop here</span>
+                  <span className="text-xs text-muted-foreground border-2 border-dashed border-muted-foreground/30 px-3 py-2 rounded-lg">
+                    Drop here
+                  </span>
                 )}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
 
       <div className="flex gap-3">
-        <button onClick={reset} className="flex-1 px-4 py-2 rounded-lg border-2 border-primary/20 font-semibold text-sm">
+        <button 
+          type="button"
+          onClick={reset} 
+          className="flex-1 px-4 py-2 rounded-lg border-2 border-primary/20 font-semibold text-sm hover:bg-muted"
+        >
           <RotateCcw className="w-4 h-4 inline mr-1" /> Reset
         </button>
         <button 
+          type="button"
           onClick={checkAnswers} 
           disabled={matchedTerms.length !== items.length}
-          className="flex-1 btn-nature text-sm py-2 disabled:opacity-50"
+          className="flex-1 btn-nature text-sm py-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Check Answers
         </button>
