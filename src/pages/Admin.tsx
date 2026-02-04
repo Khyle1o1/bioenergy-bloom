@@ -7,8 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Users, TrendingUp, Award, RefreshCw } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Users, TrendingUp, Award, RefreshCw, Settings } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UserManagement } from '@/components/admin/UserManagement';
 
 interface StudentData {
   id: string;
@@ -43,7 +45,6 @@ export default function Admin() {
 
   const fetchStudents = async () => {
     try {
-      // Get all student progress with profiles
       const { data: progressData, error: progressError } = await supabase
         .from('student_progress')
         .select('*');
@@ -56,7 +57,6 @@ export default function Admin() {
 
       if (profilesError) throw profilesError;
 
-      // Combine the data
       const combined = progressData?.map(progress => {
         const profile = profilesData?.find(p => p.user_id === progress.user_id);
         return {
@@ -129,147 +129,166 @@ export default function Admin() {
             </Button>
             <div>
               <h1 className="text-2xl font-bold font-heading">Admin Dashboard</h1>
-              <p className="text-sm opacity-90">Monitor student progress</p>
+              <p className="text-sm opacity-90">Manage users and monitor progress</p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto p-6 space-y-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-blue-700">Total Students</CardTitle>
-              <Users className="h-5 w-5 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-900">{totalStudents}</div>
-              <p className="text-xs text-blue-600 mt-1">Registered learners</p>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="progress" className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="progress" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Student Progress
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              User Management
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-green-700">Avg. Progress</CardTitle>
-              <TrendingUp className="h-5 w-5 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-900">{averageProgress}%</div>
-              <Progress value={averageProgress} className="mt-2 h-2" />
-            </CardContent>
-          </Card>
+          <TabsContent value="progress" className="space-y-6 mt-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-blue-700">Total Students</CardTitle>
+                  <Users className="h-5 w-5 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-blue-900">{totalStudents}</div>
+                  <p className="text-xs text-blue-600 mt-1">Registered learners</p>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-amber-700">Completed</CardTitle>
-              <Award className="h-5 w-5 text-amber-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-amber-900">{completedStudents}</div>
-              <p className="text-xs text-amber-600 mt-1">Finished all lessons</p>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-green-700">Avg. Progress</CardTitle>
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-green-900">{averageProgress}%</div>
+                  <Progress value={averageProgress} className="mt-2 h-2" />
+                </CardContent>
+              </Card>
 
-        {/* Students Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Student Progress Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {students.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No students enrolled yet</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Student</TableHead>
-                      <TableHead className="text-center">Pre-Test</TableHead>
-                      <TableHead className="text-center">Lesson 1</TableHead>
-                      <TableHead className="text-center">Lesson 2</TableHead>
-                      <TableHead className="text-center">Lesson 3</TableHead>
-                      <TableHead className="text-center">Post-Test</TableHead>
-                      <TableHead className="text-center">Progress</TableHead>
-                      <TableHead>Last Activity</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {students.map((student) => (
-                      <TableRow key={student.id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{student.full_name}</p>
-                            <p className="text-xs text-muted-foreground">{student.email}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {student.pre_test_completed ? (
-                            <Badge variant="secondary">{student.pre_test_score}/30</Badge>
-                          ) : (
-                            <Badge variant="outline">—</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {student.lesson1_completed ? (
-                            <Badge className="bg-chlorophyll">{student.lesson1_score}%</Badge>
-                          ) : (
-                            <Badge variant="outline">—</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {student.lesson2_completed ? (
-                            <Badge className="bg-sunlight text-black">{student.lesson2_score}%</Badge>
-                          ) : (
-                            <Badge variant="outline">—</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {student.lesson3_completed ? (
-                            <Badge className="bg-glucose">{student.lesson3_score}%</Badge>
-                          ) : (
-                            <Badge variant="outline">—</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {student.post_test_completed ? (
-                            <Badge className="bg-atp">{student.post_test_score}/30</Badge>
-                          ) : (
-                            <Badge variant="outline">—</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center gap-2">
-                            <Progress value={student.total_progress} className="w-16 h-2" />
-                            <span className="text-sm font-medium">{student.total_progress}%</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground">
-                            {new Date(student.last_activity).toLocaleDateString()}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-amber-700">Completed</CardTitle>
+                  <Award className="h-5 w-5 text-amber-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-amber-900">{completedStudents}</div>
+                  <p className="text-xs text-amber-600 mt-1">Finished all lessons</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Students Table */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Student Progress Overview</CardTitle>
+                <Button
+                  variant="outline"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  size="sm"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {students.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No students enrolled yet</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Student</TableHead>
+                          <TableHead className="text-center">Pre-Test</TableHead>
+                          <TableHead className="text-center">Lesson 1</TableHead>
+                          <TableHead className="text-center">Lesson 2</TableHead>
+                          <TableHead className="text-center">Lesson 3</TableHead>
+                          <TableHead className="text-center">Post-Test</TableHead>
+                          <TableHead className="text-center">Progress</TableHead>
+                          <TableHead>Last Activity</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {students.map((student) => (
+                          <TableRow key={student.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{student.full_name}</p>
+                                <p className="text-xs text-muted-foreground">{student.email}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {student.pre_test_completed ? (
+                                <Badge variant="secondary">{student.pre_test_score}/30</Badge>
+                              ) : (
+                                <Badge variant="outline">—</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {student.lesson1_completed ? (
+                                <Badge className="bg-chlorophyll">{student.lesson1_score}%</Badge>
+                              ) : (
+                                <Badge variant="outline">—</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {student.lesson2_completed ? (
+                                <Badge className="bg-sunlight text-black">{student.lesson2_score}%</Badge>
+                              ) : (
+                                <Badge variant="outline">—</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {student.lesson3_completed ? (
+                                <Badge className="bg-glucose">{student.lesson3_score}%</Badge>
+                              ) : (
+                                <Badge variant="outline">—</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {student.post_test_completed ? (
+                                <Badge className="bg-atp">{student.post_test_score}/30</Badge>
+                              ) : (
+                                <Badge variant="outline">—</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="flex items-center gap-2">
+                                <Progress value={student.total_progress} className="w-16 h-2" />
+                                <span className="text-sm font-medium">{student.total_progress}%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(student.last_activity).toLocaleDateString()}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users" className="mt-6">
+            <UserManagement currentUserId={user?.id || ''} />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
