@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Progress } from './useProgress';
 
@@ -35,7 +35,8 @@ export function useProgressSync(
         })
         .eq('user_id', user.id);
     } catch (error) {
-      console.error('Error syncing progress:', error);
+      const err = error as { message?: string; code?: string };
+      console.error('[ProgressSync] Error syncing progress:', err?.message ?? err, err);
     }
   }, [user, progress]);
 
@@ -61,7 +62,7 @@ export function useProgressSync(
           .maybeSingle();
 
         updateLocalProgress({
-          studentName: profile?.full_name || 'Student',
+          studentName: profile?.full_name || 'user',
           preTestScore: data.pre_test_score,
           preTestCompleted: data.pre_test_completed,
           postTestScore: data.post_test_score,
@@ -87,7 +88,8 @@ export function useProgressSync(
         });
       }
     } catch (error) {
-      console.error('Error loading progress:', error);
+      const err = error as { message?: string; code?: string };
+      console.error('[ProgressSync] Error loading progress:', err?.message ?? err, err);
     }
   }, [user, updateLocalProgress]);
 

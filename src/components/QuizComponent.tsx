@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 interface QuizComponentProps {
@@ -140,9 +141,12 @@ export function QuizComponent({
 
       {/* Results Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-sm text-center">
+        <DialogContent className="max-w-sm text-center" aria-describedby="quiz-results-desc">
           <DialogHeader>
             <DialogTitle className="sr-only">Quiz Results</DialogTitle>
+            <DialogDescription id="quiz-results-desc" className="sr-only">
+              Your quiz score and whether you passed
+            </DialogDescription>
           </DialogHeader>
           <div className={`mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4 bounce-success ${passed ? 'bg-primary/10' : 'bg-amber-100'}`}>
             <Trophy className={`w-10 h-10 ${passed ? 'text-primary' : 'text-amber-600'}`} />

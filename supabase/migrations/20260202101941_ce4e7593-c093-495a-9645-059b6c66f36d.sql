@@ -1,8 +1,12 @@
--- Create user roles enum
-CREATE TYPE public.app_role AS ENUM ('admin', 'student');
+-- Create user roles enum (if not exists)
+DO $$ BEGIN
+  CREATE TYPE public.app_role AS ENUM ('admin', 'student');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 -- Create profiles table for user information
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
   full_name TEXT NOT NULL,
@@ -12,7 +16,7 @@ CREATE TABLE public.profiles (
 );
 
 -- Create user_roles table
-CREATE TABLE public.user_roles (
+CREATE TABLE IF NOT EXISTS public.user_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   role app_role NOT NULL DEFAULT 'student',
@@ -20,7 +24,7 @@ CREATE TABLE public.user_roles (
 );
 
 -- Create student_progress table
-CREATE TABLE public.student_progress (
+CREATE TABLE IF NOT EXISTS public.student_progress (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
   pre_test_score INTEGER,
@@ -64,38 +68,49 @@ AS $$
 $$;
 
 -- Profiles policies
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile" ON public.profiles
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 CREATE POLICY "Users can insert own profile" ON public.profiles
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.profiles;
 CREATE POLICY "Admins can view all profiles" ON public.profiles
   FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
 
 -- User roles policies
+DROP POLICY IF EXISTS "Users can view own role" ON public.user_roles;
 CREATE POLICY "Users can view own role" ON public.user_roles
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins can view all roles" ON public.user_roles;
 CREATE POLICY "Admins can view all roles" ON public.user_roles
   FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
 
+DROP POLICY IF EXISTS "Admins can manage roles" ON public.user_roles;
 CREATE POLICY "Admins can manage roles" ON public.user_roles
   FOR ALL USING (public.has_role(auth.uid(), 'admin'));
 
 -- Student progress policies
+DROP POLICY IF EXISTS "Users can view own progress" ON public.student_progress;
 CREATE POLICY "Users can view own progress" ON public.student_progress
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own progress" ON public.student_progress;
 CREATE POLICY "Users can update own progress" ON public.student_progress
   FOR UPDATE USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own progress" ON public.student_progress;
 CREATE POLICY "Users can insert own progress" ON public.student_progress
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins can view all progress" ON public.student_progress;
 CREATE POLICY "Admins can view all progress" ON public.student_progress
   FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
 
@@ -116,6 +131,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -130,10 +146,12 @@ END;
 $$ LANGUAGE plpgsql SET search_path = public;
 
 -- Triggers for updated_at
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
 CREATE TRIGGER update_profiles_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_student_progress_updated_at ON public.student_progress;
 CREATE TRIGGER update_student_progress_updated_at
   BEFORE UPDATE ON public.student_progress
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

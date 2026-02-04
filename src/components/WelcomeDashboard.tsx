@@ -33,7 +33,7 @@ export function WelcomeDashboard({
             <span className="text-sm font-medium opacity-90">Welcome back!</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-            Hi {studentName}! 🌱
+            {studentName === 'user' ? 'Hello User!' : `Hi ${studentName}!`} 🌱
           </h1>
           <p className="text-sm sm:text-base opacity-90 max-w-md">
             Explore the energy in Bukidnon's plants! Discover how sunlight becomes the fuel for life.

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Sun, Leaf, Menu, RotateCcw, LogIn, LogOut, ShieldCheck } from 'lucide-react';
 import { EnergyProgressBar } from './EnergyProgressBar';
 import { AuthModal } from './AuthModal';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +12,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
   progress: number;
@@ -19,11 +30,28 @@ interface HeaderProps {
 
 export function Header({ progress, onReset }: HeaderProps) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await signOut();
+    setSignOutDialogOpen(false);
+    try {
+      await signOut();
+      toast.success('Signed out successfully');
+      navigate('/');
+      // Reload after a short delay so Supabase has cleared localStorage
+      setTimeout(() => {
+        window.location.reload();
+      }, 150);
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+      toast.error('Failed to sign out. Please try again.');
+      navigate('/');
+      setTimeout(() => {
+        window.location.reload();
+      }, 150);
+    }
   };
 
   return (
@@ -71,7 +99,12 @@ export function Header({ progress, onReset }: HeaderProps) {
                           Admin Dashboard
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem onClick={handleSignOut}>
+                      <DropdownMenuItem
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          setSignOutDialogOpen(true);
+                        }}
+                      >
                         <LogOut className="w-4 h-4 mr-2" />
                         Sign Out
                       </DropdownMenuItem>
@@ -95,6 +128,29 @@ export function Header({ progress, onReset }: HeaderProps) {
       </header>
 
       <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
+
+      <AlertDialog open={signOutDialogOpen} onOpenChange={setSignOutDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to sign out? You will need to sign in again to access your progress.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setSignOutDialogOpen(false);
+                handleSignOut();
+              }}
+            >
+              Sign Out
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

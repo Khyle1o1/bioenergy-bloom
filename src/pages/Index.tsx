@@ -7,7 +7,7 @@ import { Lesson1Bioenergetics } from '@/components/Lesson1Bioenergetics';
 import { ComingSoon } from '@/components/ComingSoon';
 import { useProgress } from '@/hooks/useProgress';
 import { useProgressSync } from '@/hooks/useProgressSync';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 import { Sun, Flame, ClipboardCheck, Lightbulb } from 'lucide-react';
 
 const Index = () => {
@@ -26,12 +26,15 @@ const Index = () => {
   
   const [activeTab, setActiveTab] = useState('welcome');
 
-  // Update student name when user logs in
+  // Update student name when user logs in or out
   useEffect(() => {
     if (user?.user_metadata?.full_name) {
       updateProgress({ studentName: user.user_metadata.full_name });
+    } else {
+      // Reset to 'user' when logged out
+      updateProgress({ studentName: 'user' });
     }
-  }, [user]);
+  }, [user, updateProgress]);
 
   const handleTabChange = (tabId: string) => {
     if (isTabUnlocked(tabId)) {

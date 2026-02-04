@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface LessonProgress {
   completed: boolean;
@@ -22,7 +22,7 @@ export interface Progress {
 }
 
 const DEFAULT_PROGRESS: Progress = {
-  studentName: 'Czaryssa',
+  studentName: 'user',
   preTestScore: null,
   preTestCompleted: false,
   postTestScore: null,
@@ -52,7 +52,7 @@ export function useProgress() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }, [progress]);
 
-  const updateProgress = (updates: Partial<Progress>) => {
+  const updateProgress = useCallback((updates: Partial<Progress>) => {
     setProgress((prev) => {
       const newProgress = { ...prev, ...updates };
       // Calculate total progress
@@ -65,7 +65,7 @@ export function useProgress() {
       newProgress.totalProgress = total;
       return newProgress;
     });
-  };
+  }, []);
 
   const completePreTest = (score: number) => {
     const passed = score >= 15; // 50% of 30

@@ -5,6 +5,19 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Validate environment variables
+if (!SUPABASE_URL) {
+  throw new Error(
+    'Missing env.VITE_SUPABASE_URL, see https://supabase.com/docs/guides/getting-started/quickstart#environment-variables'
+  );
+}
+
+if (!SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error(
+    'Missing env.VITE_SUPABASE_PUBLISHABLE_KEY, see https://supabase.com/docs/guides/getting-started/quickstart#environment-variables'
+  );
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
@@ -15,3 +28,43 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+/** Force-clear auth session from localStorage (e.g. when signOut() fails due to invalid refresh token). */
+export function clearSupabaseAuthStorage(): void {
+  try {
+    const projectRef = new URL(SUPABASE_URL).hostname.split('.')[0];
+    const prefix = `sb-${projectRef}-auth-token`;
+    
+    // Clear all possible Supabase auth keys
+    const keysToRemove = [
+      prefix,
+      `${prefix}-code-verifier`,
+      `${prefix}-user`,
+      // Also try the default key format
+      'supabase.auth.token',
+      'supabase.auth.token-code-verifier',
+      'supabase.auth.token-user',
+    ];
+    
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+    });
+    
+    // Also clear any keys that start with 'sb-' (Supabase prefix)
+    const allKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('sb-') || key.startsWith('supabase.auth'))) {
+        allKeys.push(key);
+      }
+    }
+    allKeys.forEach(key => {
+      console.info('[Auth] Clearing localStorage key:', key);
+      localStorage.removeItem(key);
+    });
+    
+    console.info('[Auth] Cleared Supabase auth storage');
+  } catch (error) {
+    console.error('[Auth] Error clearing storage:', error);
+  }
+}

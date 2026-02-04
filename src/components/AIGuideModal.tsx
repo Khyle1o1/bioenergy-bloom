@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 interface AIGuideModalProps {
@@ -14,12 +15,15 @@ interface AIGuideModalProps {
 export function AIGuideModal({ open, onClose }: AIGuideModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" aria-describedby="ai-guide-desc">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bot className="w-5 h-5 text-primary" />
             AI Learning Guide
           </DialogTitle>
+          <DialogDescription id="ai-guide-desc" className="sr-only">
+            Guidelines for using AI ethically in your learning
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 text-sm">
