@@ -18,6 +18,9 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
+  // Controls whether correct/incorrect feedback is visible.
+  // Starts false and only becomes true after "Check Answers" is pressed.
+  const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
     setTerms([...items].sort(() => Math.random() - 0.5));
@@ -42,6 +45,8 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
     
     setMatches((prev) => ({ ...prev, [selectedTerm]: definitionId }));
     setSelectedTerm(null);
+    // Any new move hides previous right/wrong feedback
+    setShowFeedback(false);
   };
 
   // Also support drag for desktop
@@ -64,6 +69,8 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
     
     setMatches((prev) => ({ ...prev, [termId]: definitionId }));
     setSelectedTerm(null);
+    // Any new move hides previous right/wrong feedback
+    setShowFeedback(false);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -71,6 +78,8 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
   };
 
   const checkAnswers = () => {
+    // Now show right/wrong feedback for current matches
+    setShowFeedback(true);
     const allCorrect = items.every((item) => matches[item.id] === item.id);
     if (allCorrect) {
       setCompleted(true);
@@ -86,6 +95,7 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
     setMatches({});
     setCompleted(false);
     setSelectedTerm(null);
+    setShowFeedback(false);
     setTerms([...items].sort(() => Math.random() - 0.5));
   };
 
@@ -154,10 +164,10 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
               className={`drop-zone w-full flex items-center gap-3 text-left ${
                 selectedTerm ? 'cursor-pointer hover:border-primary hover:bg-primary/5' : ''
               } ${
-                matchedTerm 
-                  ? correct 
-                    ? 'success' 
-                    : 'border-amber-400 bg-amber-50' 
+                matchedTerm && showFeedback
+                  ? correct
+                    ? 'success'
+                    : 'border-amber-400 bg-amber-50'
                   : ''
               }`}
             >
@@ -167,12 +177,14 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
               <div className="w-32 min-h-[40px] flex items-center justify-center">
                 {matchedTerm ? (
                   <span className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                    correct 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-amber-100 text-amber-700'
+                    showFeedback
+                      ? correct
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-amber-100 text-amber-700'
+                      : 'bg-muted text-foreground'
                   }`}>
                     {matchedTerm.term}
-                    {correct && <CheckCircle className="w-4 h-4 inline ml-1" />}
+                    {showFeedback && correct && <CheckCircle className="w-4 h-4 inline ml-1" />}
                   </span>
                 ) : (
                   <span className="text-xs text-muted-foreground border-2 border-dashed border-muted-foreground/30 px-3 py-2 rounded-lg">

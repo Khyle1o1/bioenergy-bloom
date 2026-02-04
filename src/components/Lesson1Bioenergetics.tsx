@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Lightbulb, Target, BookOpen, FlaskConical, Award, Rocket } from 'lucide-react';
 import { LessonAccordion } from './LessonAccordion';
 import { DragDropMatch } from './DragDropMatch';
@@ -18,8 +18,46 @@ const MATCH_ITEMS = [
   { id: 'glucose', term: 'Glucose', definition: 'Simple sugar for energy storage' },
 ];
 
+const SECTIONS_DONE_KEY = 'lesson1_sections_done';
+const OPEN_SECTIONS_KEY = 'lesson1_open_sections';
+
 export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
-  const [sectionsDone, setSectionsDone] = useState<string[]>([]);
+  const [sectionsDone, setSectionsDone] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(SECTIONS_DONE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [openSections, setOpenSections] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(OPEN_SECTIONS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SECTIONS_DONE_KEY, JSON.stringify(sectionsDone));
+    } catch {
+      // ignore write errors
+    }
+  }, [sectionsDone]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(OPEN_SECTIONS_KEY, JSON.stringify(openSections));
+    } catch {
+      // ignore write errors
+    }
+  }, [openSections]);
 
   const markDone = (id: string) => {
     if (!sectionsDone.includes(id)) {
@@ -194,7 +232,11 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
         </div>
       </div>
       
-      <LessonAccordion sections={sections} />
+      <LessonAccordion
+        sections={sections}
+        initialOpenSections={openSections}
+        onOpenSectionsChange={setOpenSections}
+      />
     </div>
   );
 }

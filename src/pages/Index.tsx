@@ -12,6 +12,8 @@ import { useAuth } from '@/contexts/useAuth';
 import { Sun, Flame, ClipboardCheck, Lightbulb } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+const ACTIVE_TAB_STORAGE_KEY = 'bioenergy_active_tab';
+
 const Index = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const location = useLocation();
@@ -29,7 +31,21 @@ const Index = () => {
   // Sync progress with database when logged in
   useProgressSync(progress, updateProgress);
   
-  const [activeTab, setActiveTab] = useState('welcome');
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      return localStorage.getItem(ACTIVE_TAB_STORAGE_KEY) || 'welcome';
+    } catch {
+      return 'welcome';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, activeTab);
+    } catch {
+      // ignore write errors
+    }
+  }, [activeTab]);
 
   // Open auth modal automatically when redirected here by a guard
   useEffect(() => {
@@ -57,6 +73,12 @@ const Index = () => {
       updateProgress({ studentName: 'user' });
     }
   }, [user, updateProgress]);
+
+  useEffect(() => {
+    if (!isTabUnlocked(activeTab)) {
+      setActiveTab('welcome');
+    }
+  }, [activeTab, isTabUnlocked]);
 
   const handleTabChange = (tabId: string) => {
     if (isTabUnlocked(tabId)) {

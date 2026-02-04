@@ -11,15 +11,24 @@ interface Section {
 
 interface LessonAccordionProps {
   sections: Section[];
+  initialOpenSections?: string[];
+  onOpenSectionsChange?: (openIds: string[]) => void;
 }
 
-export function LessonAccordion({ sections }: LessonAccordionProps) {
-  const [openSections, setOpenSections] = useState<string[]>([sections[0]?.id]);
+export function LessonAccordion({ sections, initialOpenSections, onOpenSectionsChange }: LessonAccordionProps) {
+  const [openSections, setOpenSections] = useState<string[]>(() => {
+    if (initialOpenSections && initialOpenSections.length > 0) {
+      return initialOpenSections;
+    }
+    return sections[0]?.id ? [sections[0].id] : [];
+  });
 
   const toggleSection = (id: string) => {
-    setOpenSections((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setOpenSections((prev) => {
+      const next = prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id];
+      onOpenSectionsChange?.(next);
+      return next;
+    });
   };
 
   return (
