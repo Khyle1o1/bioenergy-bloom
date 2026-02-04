@@ -33,18 +33,20 @@ const Index = () => {
 
   // Open auth modal automatically when redirected here by a guard
   useEffect(() => {
-    const state = location.state as { openAuth?: boolean; message?: string } | null;
+    const state = location.state as { openAuth?: boolean; message?: string; fromAdmin?: boolean } | null;
     if (!user && state?.openAuth) {
       setAuthModalOpen(true);
     }
   }, [location.state, user]);
 
-  // Auto-redirect admins straight to the admin dashboard after auth resolves
+  // Auto-redirect admins straight to the admin dashboard after auth resolves,
+  // unless they explicitly navigated here from the admin dashboard.
   useEffect(() => {
-    if (!authLoading && user && isAdmin) {
+    const state = location.state as { openAuth?: boolean; message?: string; fromAdmin?: boolean } | null;
+    if (!authLoading && user && isAdmin && !state?.fromAdmin) {
       navigate('/admin/dashboard', { replace: true });
     }
-  }, [authLoading, user, isAdmin, navigate]);
+  }, [authLoading, user, isAdmin, navigate, location.state]);
 
   // Update student name when user logs in or out
   useEffect(() => {

@@ -8,9 +8,10 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Users, TrendingUp, Award, RefreshCw, Settings } from 'lucide-react';
+import { ArrowLeft, Users, TrendingUp, Award, RefreshCw, Settings, LogOut } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { toast } from 'sonner';
 
 interface StudentData {
   id: string;
@@ -31,11 +32,29 @@ interface StudentData {
 }
 
 export default function Admin() {
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success('Signed out successfully');
+      navigate('/');
+      setTimeout(() => {
+        window.location.reload();
+      }, 150);
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+      toast.error('Failed to sign out. Please try again.');
+      navigate('/');
+      setTimeout(() => {
+        window.location.reload();
+      }, 150);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
@@ -120,10 +139,10 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
               onClick={() => navigate('/home')}
-              className="text-white hover:bg-white/20"
+              className="bg-white text-chlorophyll hover:bg-white/90 border-none shadow-sm"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -131,6 +150,23 @@ export default function Admin() {
               <h1 className="text-2xl font-bold font-heading">Admin Dashboard</h1>
               <p className="text-sm opacity-90">Manage users and monitor progress</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/', { state: { fromAdmin: true } })}
+              className="bg-white text-chlorophyll hover:bg-white/90 hover:text-chlorophyll border-none shadow-sm"
+            >
+              Go back to learn page
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSignOut}
+              className="bg-white/95 text-red-600 hover:bg-white hover:text-red-600 border-none shadow-sm"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Log out
+            </Button>
           </div>
         </div>
       </header>
