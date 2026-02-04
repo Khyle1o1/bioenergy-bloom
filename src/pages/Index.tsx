@@ -66,10 +66,9 @@ const Index = () => {
 
   const handlePreTestComplete = (score: number) => {
     completePreTest(score);
-    if (score >= 15) {
-      // Auto-navigate to lesson 1 after passing
-      setTimeout(() => setActiveTab('lesson1'), 1500);
-    }
+    // After completing the diagnostic pre-test once, move the learner
+    // forward to Lesson 1 regardless of score.
+    setTimeout(() => setActiveTab('lesson1'), 1500);
   };
 
   const handleLesson1Complete = (score: number) => {

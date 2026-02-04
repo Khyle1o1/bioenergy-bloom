@@ -32,7 +32,9 @@ const DEFAULT_PROGRESS: Progress = {
     lesson2: { completed: false, score: 0, assessmentCompleted: false },
     lesson3: { completed: false, score: 0, assessmentCompleted: false },
   },
-  unlockedTabs: ['welcome', 'pretest', 'lesson1', 'lesson2', 'lesson3'],
+  // Initially, only Home and Pre-Test are available.
+  // Lessons unlock progressively after passing requirements.
+  unlockedTabs: ['welcome', 'pretest'],
   totalProgress: 0,
 };
 
@@ -68,16 +70,15 @@ export function useProgress() {
   }, []);
 
   const completePreTest = (score: number) => {
-    const passed = score >= 15; // 50% of 30
-    const newUnlocked = passed 
-      ? [...progress.unlockedTabs, 'lesson1'] 
-      : progress.unlockedTabs;
+    // Pre-test is diagnostic only. Completing it once unlocks Lesson 1
+    // regardless of score.
+    const newUnlocked = [...progress.unlockedTabs, 'lesson1'];
     updateProgress({
       preTestScore: score,
       preTestCompleted: true,
       unlockedTabs: [...new Set(newUnlocked)],
     });
-    return passed;
+    return true;
   };
 
   const completeLesson = (lessonKey: 'lesson1' | 'lesson2' | 'lesson3', score: number) => {

@@ -26,7 +26,7 @@ export function PreTest({ onComplete, completed, score }: PreTestProps) {
             <div>
               <p className="font-semibold text-sm">30 Questions • ~15 minutes</p>
               <p className="text-sm text-muted-foreground">
-                Score at least 50% to unlock Lesson 1. Take your time!
+                This is a diagnostic pre-test. Complete it once to unlock Lesson 1 — your score is just to see what you already know.
               </p>
             </div>
           </div>
@@ -38,9 +38,7 @@ export function PreTest({ onComplete, completed, score }: PreTestProps) {
               ✅ Pre-Test Completed: {score}/30 ({Math.round(score / 30 * 100)}%)
             </p>
             <p className="text-sm text-muted-foreground mt-1">
-              {score >= 15 
-                ? "Great start! Lesson 1 is now unlocked." 
-                : "Keep learning! You can still explore the content."}
+              Lesson 1 is now unlocked. Use your score to see which topics you can review and improve.
             </p>
           </div>
         )}
@@ -50,8 +48,10 @@ export function PreTest({ onComplete, completed, score }: PreTestProps) {
         title="Pre-Test Questions"
         questions={preTestQuestions}
         onComplete={onComplete}
-        passingScore={50}
+        passingScore={0}
         showResults={completed}
+        allowRetry={false}
+        diagnosticMode
       />
     </div>
   );

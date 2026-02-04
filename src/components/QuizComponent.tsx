@@ -15,6 +15,12 @@ interface QuizComponentProps {
   onComplete: (score: number) => void;
   passingScore?: number;
   showResults?: boolean;
+  // When false, hides "Retry" actions so the quiz
+  // can only be taken once (e.g. diagnostic pre-test).
+  allowRetry?: boolean;
+  // When true, treats the quiz as diagnostic-only:
+  // no pass/fail gating or "need X% to unlock" messaging.
+  diagnosticMode?: boolean;
 }
 
 export function QuizComponent({ 
@@ -22,7 +28,9 @@ export function QuizComponent({
   questions, 
   onComplete, 
   passingScore = 50,
-  showResults = false 
+  showResults = false,
+  allowRetry = true,
+  diagnosticMode = false,
 }: QuizComponentProps) {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(showResults);
@@ -59,7 +67,7 @@ export function QuizComponent({
   };
 
   const percentage = Math.round((score / questions.length) * 100);
-  const passed = percentage >= passingScore;
+  const passed = diagnosticMode ? true : percentage >= passingScore;
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -128,7 +136,7 @@ export function QuizComponent({
         </button>
       )}
 
-      {submitted && !showModal && (
+      {submitted && !showModal && allowRetry && (
         <div className="flex gap-3">
           <button onClick={handleRetry} className="flex-1 btn-nature bg-muted text-foreground">
             <RotateCcw className="w-4 h-4" /> Retry
@@ -152,23 +160,27 @@ export function QuizComponent({
             <Trophy className={`w-10 h-10 ${passed ? 'text-primary' : 'text-amber-600'}`} />
           </div>
           <h3 className="text-2xl font-bold mb-2">
-            {passed ? '🎉 Excellent!' : '💪 Keep Going!'}
+            {diagnosticMode ? 'Pre-Test Complete' : passed ? '🎉 Excellent!' : '💪 Keep Going!'}
           </h3>
           <p className="text-4xl font-bold text-primary mb-2">
             {score}/{questions.length}
           </p>
           <p className="text-muted-foreground mb-4">
-            {percentage}% — {passed ? 'You passed!' : `Need ${passingScore}% to unlock next section`}
+            {percentage}% — {diagnosticMode
+              ? 'This pre-test is just to see what you already know.'
+              : passed
+                ? 'You passed!'
+                : `Need ${passingScore}% to unlock next section`}
           </p>
-          
-          {!passed && (
+
+          {!passed && !diagnosticMode && (
             <p className="text-sm text-muted-foreground mb-4">
               Review the concepts and try again. Focus on ATP, organelles, and energy flow!
             </p>
           )}
 
           <div className="flex gap-3">
-            {!passed && (
+            {!passed && allowRetry && !diagnosticMode && (
               <button onClick={handleRetry} className="flex-1 px-4 py-2 rounded-lg border-2 border-primary/20 font-semibold">
                 <RotateCcw className="w-4 h-4 inline mr-1" /> Retry
               </button>
