@@ -47,25 +47,86 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
   const [editFullName, setEditFullName] = useState('');
   const [editRole, setEditRole] = useState<'admin' | 'student'>('student');
 
+  const decodeJwtPayload = (token: string) => {
+    try {
+      const parts = token.split('.');
+      if (parts.length < 2) return null;
+      const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(
+        atob(b64)
+          .split('')
+          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+          .join('')
+      );
+      return JSON.parse(json) as Record<string, unknown>;
+    } catch {
+      return null;
+    }
+  };
+
+  const logAuthDebug = async (label: string) => {
+    try {
+      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      console.groupCollapsed(`[UserManagement][debug] ${label}`);
+      console.log('currentUserId prop:', currentUserId);
+      console.log('getSession error:', sessionErr ?? null);
+      console.log('has session:', !!session);
+      console.log('session user id:', session?.user?.id ?? null);
+      console.log('session email:', session?.user?.email ?? null);
+      console.log('session expires_at:', session?.expires_at ?? null);
+
+      const token = session?.access_token ?? '';
+      console.log('access token length:', token.length);
+      console.log('access token preview:', token ? `${token.slice(0, 12)}…${token.slice(-12)}` : null);
+      console.log('decoded jwt payload:', token ? decodeJwtPayload(token) : null);
+      console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+      console.log('apikey present:', !!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+      console.groupEnd();
+    } catch (e) {
+      console.warn('[UserManagement][debug] failed to log auth debug:', e);
+    }
+  };
+
   const fetchUsers = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      await logAuthDebug('before list');
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('Not authenticated');
+      const apikey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=list`;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=list`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      console.info('[UserManagement][debug] list request:', {
+        url,
+        hasToken: !!token,
+        tokenPreview: `${token.slice(0, 12)}…${token.slice(-12)}`,
+        hasApikey: !!apikey,
+      });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey,
+          Accept: 'application/json',
+        },
+      });
 
-      setUsers(data.users || []);
+      const text = await res.text();
+      let parsed: any = null;
+      try {
+        parsed = text ? JSON.parse(text) : null;
+      } catch {
+        parsed = text;
+      }
+
+      if (!res.ok) {
+        console.error('[UserManagement] list failed:', res.status, parsed);
+        throw new Error((parsed && parsed.error) || `Request failed (${res.status})`);
+      }
+
+      setUsers(parsed?.users || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
@@ -89,28 +150,28 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
     setFormLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('Not authenticated');
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=create`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: newEmail,
-            password: newPassword,
-            full_name: newFullName,
-            role: newRole,
-          }),
-        }
-      );
+      const { error } = await supabase.functions.invoke('admin-users?action=create', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: {
+          email: newEmail,
+          password: newPassword,
+          full_name: newFullName,
+          role: newRole,
+        },
+      });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      if (error) {
+        console.error('[UserManagement] create failed:', error);
+        throw new Error(error.message || 'Request failed');
+      }
 
       toast.success('User created successfully');
       setAddDialogOpen(false);
@@ -129,9 +190,6 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
     setFormLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
-
       const updates: Record<string, string> = {
         user_id: selectedUser.id,
       };
@@ -141,20 +199,23 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
       if (editRole !== selectedUser.role) updates.role = editRole;
       if (editPassword) updates.password = editPassword;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=update`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updates),
-        }
-      );
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('Not authenticated');
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      const { error } = await supabase.functions.invoke('admin-users?action=update', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: updates,
+      });
+
+      if (error) {
+        console.error('[UserManagement] update failed:', error);
+        throw new Error(error.message || 'Request failed');
+      }
 
       toast.success('User updated successfully');
       setEditDialogOpen(false);
@@ -169,23 +230,23 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('Not authenticated');
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-users?action=delete`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ user_id: userId }),
-        }
-      );
+      const { error } = await supabase.functions.invoke('admin-users?action=delete', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: { user_id: userId },
+      });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      if (error) {
+        console.error('[UserManagement] delete failed:', error);
+        throw new Error(error.message || 'Request failed');
+      }
 
       toast.success('User deleted successfully');
       fetchUsers();

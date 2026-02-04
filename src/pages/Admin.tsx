@@ -39,7 +39,7 @@ export default function Admin() {
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
-      navigate('/');
+      navigate('/', { replace: true, state: { openAuth: true } });
     }
   }, [user, isAdmin, authLoading, navigate]);
 
@@ -122,7 +122,7 @@ export default function Admin() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/home')}
               className="text-white hover:bg-white/20"
             >
               <ArrowLeft className="h-5 w-5" />

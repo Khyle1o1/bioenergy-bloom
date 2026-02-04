@@ -1,14 +1,22 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+function buildCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin') ?? '*'
+  return {
+    // Echo origin so browsers accept preflight reliably
+    'Access-Control-Allow-Origin': origin,
+    'Vary': 'Origin',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS',
+    'Access-Control-Max-Age': '86400',
+  }
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = buildCorsHeaders(req)
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { status: 204, headers: corsHeaders })
   }
 
   try {
@@ -29,17 +37,17 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Create a client with the user's token to verify they're authenticated
+    // Create a client with anon key (used only to validate the user's JWT)
     const supabaseClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: authHeader } },
       auth: { autoRefreshToken: false, persistSession: false }
     })
 
-    // Get the current user
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    // Get the current user (pass raw JWT explicitly)
+    const jwt = authHeader.replace(/^Bearer\s+/i, '').trim()
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(jwt)
     if (userError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: userError?.message ?? 'Invalid JWT' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -51,7 +59,15 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id)
       .eq('role', 'admin')
 
-    if (rolesError || !roles || roles.length === 0) {
+    if (rolesError) {
+      console.error('Admin role check failed:', rolesError)
+      return new Response(
+        JSON.stringify({ error: 'Role check failed', details: rolesError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!roles || roles.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

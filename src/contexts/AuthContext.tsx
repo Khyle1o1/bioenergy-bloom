@@ -20,9 +20,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const isSigningOutRef = useRef(false);
+  const SESSION_MESSAGE_KEY = 'bioenergy.auth.message';
+
+  const applySession = (nextSession: Session | null) => {
+    setSession(nextSession);
+    setUser(nextSession?.user ?? null);
+
+    if (!nextSession?.user) {
+      setIsAdmin(false);
+      setLoading(false);
+      return;
+    }
+
+    // Resolve admin role *after* auth callback returns (avoid auth-js lock deadlocks)
+    setLoading(true);
+    setTimeout(() => {
+      fetchAdminStatus(nextSession.user.id)
+        .then(setIsAdmin)
+        .catch((err) => {
+          console.error('[Auth] fetchAdminStatus failed:', err);
+          setIsAdmin(false);
+        })
+        .finally(() => setLoading(false));
+    }, 0);
+  };
 
   const clearInvalidSession = () => {
     console.warn('[Auth] Clearing invalid session (403/permission denied or invalid refresh token). Sign in again.');
+    try {
+      sessionStorage.setItem(SESSION_MESSAGE_KEY, 'Your session expired. Please log in again.');
+    } catch {
+      // ignore
+    }
     setUser(null);
     setSession(null);
     setIsAdmin(false);
@@ -49,32 +78,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Set up auth state listener BEFORE checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.info('[Auth] Auth state change:', event, session?.user?.email ?? '(no user)');
         
         // If we're signing out, ignore any session restoration
         if (isSigningOutRef.current) {
           console.info('[Auth] Ignoring auth state change during sign-out');
           if (event === 'SIGNED_OUT' || !session) {
-            setSession(null);
-            setUser(null);
-            setIsAdmin(false);
-            setLoading(false);
+            applySession(null);
           }
           return;
         }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
 
-        if (session?.user) {
-          const admin = await fetchAdminStatus(session.user.id);
-          setIsAdmin(admin);
-        } else {
-          setIsAdmin(false);
-        }
-
-        setLoading(false);
+        applySession(session);
       }
     );
 
@@ -86,20 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         return;
       }
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        fetchAdminStatus(session.user.id)
-          .then(setIsAdmin)
-          .catch((err) => {
-            console.error('[Auth] Initial fetchAdminStatus failed:', err);
-            setIsAdmin(false);
-          })
-          .finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
+      applySession(session);
     });
 
     return () => subscription.unsubscribe();

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Sun, Leaf, Menu, RotateCcw, LogIn, LogOut, ShieldCheck } from 'lucide-react';
 import { EnergyProgressBar } from './EnergyProgressBar';
-import { AuthModal } from './AuthModal';
 import { useAuth } from '@/contexts/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -26,10 +25,10 @@ import { Button } from '@/components/ui/button';
 interface HeaderProps {
   progress: number;
   onReset: () => void;
+  onOpenAuth: () => void;
 }
 
-export function Header({ progress, onReset }: HeaderProps) {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+export function Header({ progress, onReset, onOpenAuth }: HeaderProps) {
   const [signOutDialogOpen, setSignOutDialogOpen] = useState(false);
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
@@ -87,7 +86,7 @@ export function Header({ progress, onReset }: HeaderProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {!user ? (
-                    <DropdownMenuItem onClick={() => setAuthModalOpen(true)}>
+                    <DropdownMenuItem onClick={onOpenAuth}>
                       <LogIn className="w-4 h-4 mr-2" />
                       Login / Sign Up
                     </DropdownMenuItem>
@@ -126,8 +125,6 @@ export function Header({ progress, onReset }: HeaderProps) {
           </div>
         </div>
       </header>
-
-      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
 
       <AlertDialog open={signOutDialogOpen} onOpenChange={setSignOutDialogOpen}>
         <AlertDialogContent>

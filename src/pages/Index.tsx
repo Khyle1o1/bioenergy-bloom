@@ -5,13 +5,18 @@ import { WelcomeDashboard } from '@/components/WelcomeDashboard';
 import { PreTest } from '@/components/PreTest';
 import { Lesson1Bioenergetics } from '@/components/Lesson1Bioenergetics';
 import { ComingSoon } from '@/components/ComingSoon';
+import { AuthModal } from '@/components/AuthModal';
 import { useProgress } from '@/hooks/useProgress';
 import { useProgressSync } from '@/hooks/useProgressSync';
 import { useAuth } from '@/contexts/useAuth';
 import { Sun, Flame, ClipboardCheck, Lightbulb } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const { 
     progress, 
     completePreTest, 
@@ -25,6 +30,21 @@ const Index = () => {
   useProgressSync(progress, updateProgress);
   
   const [activeTab, setActiveTab] = useState('welcome');
+
+  // Open auth modal automatically when redirected here by a guard
+  useEffect(() => {
+    const state = location.state as { openAuth?: boolean; message?: string } | null;
+    if (!user && state?.openAuth) {
+      setAuthModalOpen(true);
+    }
+  }, [location.state, user]);
+
+  // Auto-redirect admins straight to the admin dashboard after auth resolves
+  useEffect(() => {
+    if (!authLoading && user && isAdmin) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [authLoading, user, isAdmin, navigate]);
 
   // Update student name when user logs in or out
   useEffect(() => {
@@ -127,7 +147,18 @@ const Index = () => {
       <Header 
         progress={progress.totalProgress} 
         onReset={resetProgress}
+        onOpenAuth={() => setAuthModalOpen(true)}
       />
+
+      {/* Login gate overlay: invisible click-catcher until user logs in */}
+      {!user && (
+        <div
+          className="fixed inset-0 z-40 bg-transparent"
+          onClick={() => setAuthModalOpen(true)}
+          role="button"
+          aria-label="Open login"
+        />
+      )}
       
       <div className="container py-4 px-4">
         <TabNavigation
@@ -140,6 +171,8 @@ const Index = () => {
           {renderContent()}
         </main>
       </div>
+
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
     </div>
   );
 };
