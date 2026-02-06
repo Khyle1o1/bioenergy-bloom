@@ -4,6 +4,7 @@ import { TabNavigation } from '@/components/TabNavigation';
 import { WelcomeDashboard } from '@/components/WelcomeDashboard';
 import { PreTest } from '@/components/PreTest';
 import { Lesson1Bioenergetics } from '@/components/Lesson1Bioenergetics';
+import { Lesson2Photosynthesis } from '@/components/Lesson2Photosynthesis';
 import { ComingSoon } from '@/components/ComingSoon';
 import { AuthModal } from '@/components/AuthModal';
 import { useProgress } from '@/hooks/useProgress';
@@ -101,6 +102,14 @@ const Index = () => {
     }
   };
 
+  const handleLesson2Complete = (score: number) => {
+    const percentage = (score / 5) * 100;
+    completeLesson('lesson2', percentage);
+    if (percentage >= 80) {
+      setTimeout(() => setActiveTab('lesson3'), 1500);
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'welcome':
@@ -130,10 +139,9 @@ const Index = () => {
         );
       case 'lesson2':
         return (
-          <ComingSoon
-            title="Lesson 2: Photosynthesis"
-            description="Explore how plants convert sunlight into glucose through light-dependent and light-independent reactions."
-            icon={<Sun className="w-10 h-10 text-sunlight" />}
+          <Lesson2Photosynthesis
+            onComplete={handleLesson2Complete}
+            completed={progress.lessons.lesson2.completed}
           />
         );
       case 'lesson3':
@@ -142,6 +150,7 @@ const Index = () => {
             title="Lesson 3: Cellular Respiration"
             description="Discover how cells break down glucose to produce ATP through glycolysis, Krebs cycle, and electron transport chain."
             icon={<Flame className="w-10 h-10 text-glucose" />}
+            locked={!isTabUnlocked('lesson3')}
           />
         );
       case 'posttest':
@@ -150,6 +159,7 @@ const Index = () => {
             title="Post-Test"
             description="Complete all lessons to unlock the final assessment and compare your growth!"
             icon={<ClipboardCheck className="w-10 h-10 text-primary" />}
+            locked={!isTabUnlocked('posttest')}
           />
         );
       case 'project':
@@ -158,6 +168,7 @@ const Index = () => {
             title="Project Studio"
             description="Apply your knowledge to create a bioenergy project relevant to Bukidnon's agriculture!"
             icon={<Lightbulb className="w-10 h-10 text-atp" />}
+            locked={!isTabUnlocked('project')}
           />
         );
       default:

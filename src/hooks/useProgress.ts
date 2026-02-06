@@ -56,7 +56,39 @@ export function useProgress() {
 
   const updateProgress = useCallback((updates: Partial<Progress>) => {
     setProgress((prev) => {
-      const newProgress = { ...prev, ...updates };
+      const newProgress: Progress = {
+        ...prev,
+        ...updates,
+        lessons: {
+          ...prev.lessons,
+          ...(updates.lessons || {}),
+        },
+      };
+
+      // Recompute which tabs should be unlocked based on progress.
+      // This makes sure that loading progress from the database
+      // (which doesn't store unlockedTabs) still correctly unlocks
+      // the appropriate lessons and assessments.
+      const unlocked = new Set<string>(['welcome', 'pretest']);
+
+      if (newProgress.preTestCompleted) {
+        unlocked.add('lesson1');
+      }
+      if (newProgress.lessons.lesson1.completed) {
+        unlocked.add('lesson2');
+      }
+      if (newProgress.lessons.lesson2.completed) {
+        unlocked.add('lesson3');
+      }
+      if (newProgress.lessons.lesson3.completed) {
+        unlocked.add('posttest');
+      }
+      if (newProgress.postTestCompleted) {
+        unlocked.add('project');
+      }
+
+      newProgress.unlockedTabs = Array.from(unlocked);
+
       // Calculate total progress
       let total = 0;
       if (newProgress.preTestCompleted) total += 15;
@@ -65,6 +97,7 @@ export function useProgress() {
       if (newProgress.lessons.lesson3.completed) total += 20;
       if (newProgress.postTestCompleted) total += 25;
       newProgress.totalProgress = total;
+
       return newProgress;
     });
   }, []);
