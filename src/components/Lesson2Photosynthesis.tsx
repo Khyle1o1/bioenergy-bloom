@@ -853,6 +853,94 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
         </div>
       ),
     },
+    {
+      id: 'assessment-show-what-you-know',
+      title: 'Assessment: Show What You Know!',
+      icon: <Target className="w-4 h-4" />,
+      completed: sectionsDone.includes('assessment-show-what-you-know'),
+      content: (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h3 className="font-bold text-primary text-sm md:text-base">
+              Assessment: Show What You Know!
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Let us test your knowledge in this lesson! Read the questions carefully and supply the correct answer in
+              the space provided.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              '1. What organelle in a plant cell performs photosynthesis?',
+              '2. What pigment makes plants green?',
+              '3. What part inside the chloroplast actually makes sugar?',
+              '4. What process converts light energy into chemical energy?',
+              '5. In photosynthesis, light energy is converted into chemical energy; what molecule stores this chemical energy?',
+              '6. What are the reactants of photosynthesis?',
+              '7. What are the products of photosynthesis?',
+            ].map((question) => (
+              <div key={question} className="space-y-1">
+                <p className="text-sm font-medium">{question}</p>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[40px]"
+                  placeholder="Write your answer here..."
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-sm font-medium">
+              8. Fill in the boxes to complete the cycle below regarding the reactants and products for photosynthesis.
+            </p>
+
+            <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-4 space-y-4">
+              <div className="relative max-w-3xl mx-auto">
+                <img
+                  className="w-full h-auto rounded-md"
+                  src="/cycle.png"
+                  alt="The cycle of matter showing arrows between animals, plants, and two central blank boxes."
+                />
+
+                {/* Left answer box overlay */}
+                <input
+                  type="text"
+                  className="absolute bg-transparent border-b border-muted-foreground/80 text-[11px] md:text-xs text-center text-black placeholder:text-black focus:outline-none focus:border-primary"
+                  style={{
+                    left: '16%',
+                    top: '56%',
+                    width: '32%',
+                  }}
+                  placeholder="Type your answer here"
+                />
+
+                {/* Right answer box overlay */}
+                <input
+                  type="text"
+                  className="absolute bg-transparent border-b border-muted-foreground/80 text-[11px] md:text-xs text-center text-black placeholder:text-black focus:outline-none focus:border-primary"
+                  style={{
+                    right: '16%',
+                    top: '56%',
+                    width: '32%',
+                  }}
+                  placeholder="Type your answer here"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={() => markDone('assessment-show-what-you-know')}
+              className="btn-nature text-sm py-2"
+            >
+              Save assessment
+            </button>
+          </div>
+        </div>
+      ),
+    },
   ];
 
   const completedSectionsCount = sectionsDone.filter((id) =>
