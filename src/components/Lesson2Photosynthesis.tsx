@@ -322,37 +322,46 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               <strong> light-independent reactions</strong> (Calvin cycle).
             </p>
 
-            <div className="pt-2 space-y-4">
-                <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-3 space-y-2 max-w-5xl mx-auto">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground">
-                    Overview of the Chloroplast
-                  </p>
-                  <button
-                    type="button"
-                    className="mx-auto block max-w-3xl w-full"
-                    onClick={() =>
-                      setLightboxImage({
-                        src: '/animated.gif',
-                        alt: 'Animation illustrating the chloroplast and photosynthesis process.',
-                      })
-                    }
-                    >
-                      <img
-                        className="w-full rounded-md"
-                        src="/animated.gif"
-                        alt="Animation illustrating the chloroplast and photosynthesis process."
-                      />
-                  </button>
-                    <p className="text-xs text-muted-foreground">
-                        Chloroplasts are found in all higher plants. It is oval or biconvex, found within the
-                        mesophyll of the plant cell. The size of the chloroplast usually varies between 4-6 µm in
-                        diameter and 1-3 µm in thickness. They are double-membrane organelle with the presence of
-                        outer, inner and intermembrane space.   
-                    </p>
-                </div>
-              </div>
+            <div className="mt-4 space-y-3">
+              <h4 className="font-bold text-primary">The Main Structure of Photosynthesis: The Chloroplast</h4>
+              <p className="text-sm text-muted-foreground">
+                In plants, photosynthesis relies on three closely connected structures: the <strong>chloroplasts</strong>,
+                the <strong>mesophyll</strong>, and the <strong>stomata</strong>. Chloroplasts are specialized organelles
+                inside mesophyll cells where almost all photosynthesis takes place. Each chloroplast is oval or
+                biconvex in shape, typically about 4–6&nbsp;µm in diameter and 1–3&nbsp;µm thick, and is enclosed by a
+                double membrane made of an outer membrane, an inner membrane, and a thin intermembrane space.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Inside the inner membrane is a fluid-filled region called the <strong>stroma</strong>, which is the site
+                of the Calvin cycle (light‑independent reactions). Suspended in the stroma are stacks of flattened,
+                disc-like sacs called <strong>thylakoids</strong>; a single disc is a thylakoid, while a stack is called
+                a <strong>granum</strong>. The thylakoid membranes contain <strong>chlorophyll</strong> and other
+                pigments that capture light energy, while the space inside each disc, the <strong>thylakoid lumen</strong>,
+                is where important steps of the light‑dependent reactions occur.
+              </p>
 
-            
+              {/* Diagram of a chloroplast */}
+              <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-3 space-y-2 max-w-3xl mx-auto">
+                <p className="text-xs font-semibold uppercase text-muted-foreground">Diagram of a Chloroplast</p>
+                <button
+                  type="button"
+                  className="w-full rounded-lg border-2 border-dashed border-muted-foreground/40 bg-background flex items-center justify-center text-[11px] text-muted-foreground text-center px-2 py-6 cursor-pointer"
+                >
+                  Insert detailed chloroplast cross-section diagram here
+                </button>
+                <p className="text-[11px] text-muted-foreground italic">
+                  [Visual Prompt]: A detailed biological diagram of a chloroplast cross-section with an oval or biconvex
+                  outline, a double membrane (outer and inner), an internal fluid-filled region labeled &quot;Stroma&quot;,
+                  stacks of green coin-shaped discs labeled &quot;Granum (stack of thylakoids)&quot;, a single disc
+                  labeled &quot;Thylakoid&quot;, and the inner space of a disc labeled &quot;Thylakoid lumen&quot;.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  A cross-section of a chloroplast, the site of photosynthesis. This diagram illustrates its
+                  double-membrane structure, the stroma (aqueous fluid where the Calvin cycle occurs), and the grana
+                  (stacks of thylakoids containing chlorophyll for capturing light energy).
+                </p>
+              </div>
+            </div>
 
             <div className="mt-4 space-y-3">
               <h4 className="font-bold text-primary">Leaf Anatomy &amp; The Light-Dependent Reaction</h4>
@@ -499,22 +508,53 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
             <h4 className="font-bold text-primary">Steps for the Light-Independent Reactions (Calvin Cycle)</h4>
             <ol className="list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
               <li>
-                <strong>Carbon fixation</strong>: CO₂ enters the leaf through stomata and binds to RuBP, producing
-                3‑PGA molecules.
+                <strong>Carbon Fixation</strong>: Carbon dioxide (CO₂) enters the leaf through stomata and diffuses
+                into the stroma. Here, it combines with ribulose bisphosphate (RuBP), a five-carbon sugar, catalyzed
+                by the enzyme ribulose bisphosphate carboxylase/oxygenase (RuBisCO). This reaction produces two
+                molecules of 3-phosphoglycerate (3-PGA), a three-carbon compound.
               </li>
               <li>
-                <strong>Reduction phase</strong>: ATP and NADPH from the light-dependent reactions convert 3‑PGA into
-                G3P, a three‑carbon sugar.
+                <strong>Reduction Phase</strong>: The 3-PGA molecules are phosphorylated by ATP and reduced by NADPH to
+                form glyceraldehyde-3-phosphate (G3P), another three-carbon sugar. Some of these G3P molecules exit the
+                cycle to contribute to glucose formation and other carbohydrates.
               </li>
               <li>
-                <strong>Regeneration of RuBP</strong>: Some G3P leaves to form glucose and other organic molecules,
-                while the rest is used to regenerate RuBP so the cycle can continue.
+                <strong>Regeneration of RuBP</strong>: The remaining G3P molecules are used to regenerate RuBP, allowing
+                the cycle to continue. This regeneration step requires additional ATP.
               </li>
             </ol>
-            <p className="text-sm text-muted-foreground">
-              The Calvin cycle&apos;s main products include glucose (for energy and storage) and other organic
-              compounds needed for plant growth.
-            </p>
+
+            {/* Placeholder for Calvin cycle diagram */}
+            <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-3 space-y-2 max-w-3xl mx-auto">
+              <p className="text-xs font-semibold uppercase text-muted-foreground">
+                Calvin Cycle (Light-Independent Reactions) Diagram
+              </p>
+              <button
+                type="button"
+                className="w-full rounded-lg border-2 border-dashed border-muted-foreground/40 bg-background flex items-center justify-center text-[11px] text-muted-foreground text-center px-2 py-6 cursor-pointer"
+              >
+                 <img
+                      className="w-full h-auto rounded-md"
+                      src="/calvin.png"
+                      alt="Diagram of the thylakoid membrane showing photosystems, electron carriers, and ATP synthase."
+                  />
+              </button>
+              <p className="text-xs text-muted-foreground">
+              The flow of the reactions in the synthesis of organic molecules from carbon
+              dioxide. The diagram also shows how ATP and NADPH fuel the reaction.
+              </p>
+            </div>
+
+            <div className="space-y-1 text-sm text-muted-foreground pt-1">
+              <p className="font-semibold">Summary of Products</p>
+              <p>
+                <strong>Glucose</strong>: Formed from G3P; serves as an energy source for plants.
+              </p>
+              <p>
+                <strong>Other organic compounds</strong>: Includes starch for storage, cellulose for cell walls, and
+                various amino acids and biomolecules needed for growth.
+              </p>
+            </div>
           </div>
 
           {/* Checkpoint 6–12 */}
@@ -565,6 +605,250 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
             >
               Continue
             </button>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'activity-2-1',
+      title: "Activity 2.1: Let's Dig Deeper!",
+      icon: <Target className="w-4 h-4" />,
+      completed: sectionsDone.includes('activity-2-1'),
+      content: (
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <h3 className="font-bold text-primary">Activity 2.1: Let&apos;s Dig Deeper!</h3>
+            <p className="text-sm text-muted-foreground">
+              Deepen your understanding of photosynthesis by using our learning assistant, ChatGPT, to explore ideas you
+              are still curious or confused about. Ask clear questions about any concepts you want to review or learn
+              more about, then use the activity below to organize what ChatGPT tells you and verify it with reliable
+              scientific sources.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Follow the guide in the table: record your questions, summarize ChatGPT&apos;s answers, check those
+              answers using textbooks, websites, or journal articles, and then write your final, evidence-based answer.
+            </p>
+          </div>
+
+          {/* Worksheet table */}
+          <div className="overflow-x-auto rounded-xl border border-muted-foreground/30 bg-muted/10">
+            <table className="min-w-full text-xs md:text-sm">
+              <thead className="bg-muted/60">
+                <tr>
+                  <th className="border-b border-muted-foreground/30 px-3 py-2 text-left font-semibold">
+                    Questions asked to ChatGPT
+                  </th>
+                  <th className="border-b border-muted-foreground/30 px-3 py-2 text-left font-semibold">
+                    Generated Answers
+                  </th>
+                  <th className="border-b border-muted-foreground/30 px-3 py-2 text-left font-semibold">
+                    Verification of answers through independent research
+                    <span className="block font-normal text-[11px] text-muted-foreground">
+                      (Include at least 2 sources)
+                    </span>
+                  </th>
+                  <th className="border-b border-muted-foreground/30 px-3 py-2 text-left font-semibold">
+                    Final answers
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2].map((row) => (
+                  <tr key={row} className="align-top">
+                    <td className="border-t border-muted-foreground/20 px-3 py-2">
+                      <textarea
+                        className="w-full rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-xs md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[60px]"
+                        placeholder="Student to fill"
+                      />
+                    </td>
+                    <td className="border-t border-muted-foreground/20 px-3 py-2">
+                      <textarea
+                        className="w-full rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-xs md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[60px]"
+                        placeholder="Student to fill"
+                      />
+                    </td>
+                    <td className="border-t border-muted-foreground/20 px-3 py-2">
+                      <textarea
+                        className="w-full rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-xs md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[60px]"
+                        placeholder="Student to fill (list sources and notes)"
+                      />
+                    </td>
+                    <td className="border-t border-muted-foreground/20 px-3 py-2">
+                      <textarea
+                        className="w-full rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-xs md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[60px]"
+                        placeholder="Student to fill (evidence-based final answer)"
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Visual placeholder for Research & Verification */}
+          <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-3 space-y-2 max-w-md">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">Research &amp; Verification</p>
+            <div className="flex items-center gap-3">
+              <div className="flex-0 w-16 h-16 rounded-lg border-2 border-dashed border-muted-foreground/40 bg-background flex items-center justify-center text-[11px] text-muted-foreground text-center px-2">
+                Insert research &amp; verification icon here
+              </div>
+              <p className="text-[11px] text-muted-foreground italic">
+                [Visual Prompt]: An icon or simple illustration showing a magnifying glass over a document or a computer
+                screen, symbolizing research and fact-checking.
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Use this activity to verify AI-generated information with credible scientific sources.
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'activity-2-2',
+      title: 'Activity 2.2: Investigation - Do Plants Consume CO₂?',
+      icon: <Target className="w-4 h-4" />,
+      completed: sectionsDone.includes('activity-2-2'),
+      content: (
+        <div className="space-y-6">
+          {/* Introduction & Theory */}
+          <div className="space-y-3">
+            <h3 className="font-bold text-primary">Activity 2.2: Investigation - Do Plants Consume CO₂?</h3>
+            <p className="text-sm text-muted-foreground">
+              You may already know the &quot;shortcut&quot; equation for photosynthesis:
+              <strong> CO₂ + H₂O + light energy → C₆H₁₂O₆ + O₂ + H₂O</strong>. While this looks simple, it actually
+              summarizes two linked stages: the <strong>light-dependent reactions</strong> (which capture light energy)
+              and the <strong>light-independent reactions</strong> (Calvin cycle), where carbon dioxide is fixed into
+              sugars.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              In this investigation, you will observe a plant fixing carbon using an indicator called
+              <strong> phenol red</strong>. Phenol red is <strong>red</strong> when the solution is neutral or basic
+              (pH around 7 or higher) and turns <strong>yellow</strong> when the solution becomes acidic (pH below 7).
+              When you gently blow bubbles into the solution, the carbon dioxide from your breath dissolves in water,
+              forming carbonic acid and lowering the pH—this makes the solution turn yellow.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              If a plant in the solution removes CO₂ during photosynthesis, the amount of carbonic acid decreases, the
+              pH rises again, and the indicator returns toward its red color. By comparing test tubes kept in the light
+              and in the dark, you will gather evidence for whether plants really consume carbon dioxide.
+            </p>
+          </div>
+
+          {/* Materials & Procedure */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-primary text-sm md:text-base">Materials</h4>
+            <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+              <li>Phenol red (0.02 aqueous solution)</li>
+              <li>Plants (elodea or kale leaves)</li>
+              <li>200 mL Erlenmeyer flask</li>
+              <li>3 test tubes with caps (or parafilm)</li>
+            </ul>
+
+            <h4 className="font-bold text-primary text-sm md:text-base">Procedure</h4>
+            <ol className="list-decimal pl-5 text-sm text-muted-foreground space-y-2">
+              <li>Fill an Erlenmeyer flask with approximately 100 mL of phenol red solution.</li>
+              <li>
+                Use a straw to gently blow into the flask until the solution turns yellow. Stop as soon as you see a
+                clear color change.
+              </li>
+              <li>Divide the yellow solution into three test tubes, about 30 mL in each tube.</li>
+              <li>
+                Add leaves from kale or elodea to <strong>two</strong> of the test tubes. Try to keep the total volume
+                in each tube as equal as possible.
+              </li>
+              <li>
+                Place the empty tube (control) and one tube containing a plant under a bright light source. Wrap the
+                third tube (containing a plant) completely in foil to keep it in the dark.
+              </li>
+            </ol>
+          </div>
+
+          {/* Visual placeholder for lab setup */}
+          <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-3 space-y-2 max-w-4xl mx-auto">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">Lab Setup Diagram</p>
+            <button
+              type="button"
+              className="w-full rounded-lg border-2 border-dashed border-muted-foreground/40 bg-background flex items-center justify-center text-[11px] text-muted-foreground text-center px-2 py-6 cursor-pointer"
+            >
+               <img
+                      className="w-full h-auto rounded-md"
+                      src="/lab_setup.png"
+                      alt="Three test tubes containing phenol red solution. Tube 2 is exposed to light, while
+              Tube 3 is kept in the dark."
+                />
+            </button>
+            <p className="text-xs text-muted-foreground">
+              Experimental setup: Three test tubes containing phenol red solution. Tube 2 is exposed to light, while
+              Tube 3 is kept in the dark.
+            </p>
+          </div>
+
+          {/* Data & Analysis */}
+          <div className="space-y-3">
+            <h4 className="font-bold text-primary text-sm md:text-base">Data Table</h4>
+            <div className="overflow-x-auto rounded-xl border border-muted-foreground/30 bg-muted/10">
+              <table className="min-w-full text-xs md:text-sm">
+                <thead className="bg-muted/60">
+                  <tr>
+                    <th className="border-b border-muted-foreground/30 px-3 py-2 text-left font-semibold">Test Tube #</th>
+                    <th className="border-b border-muted-foreground/30 px-3 py-2 text-left font-semibold">
+                      Contents of Tube
+                    </th>
+                    <th className="border-b border-muted-foreground/30 px-3 py-2 text-left font-semibold">
+                      Initial Color
+                    </th>
+                    <th className="border-b border-muted-foreground/30 px-3 py-2 text-left font-semibold">
+                      Final Color (after 30 mins)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[1, 2, 3].map((tube) => (
+                    <tr key={tube}>
+                      <td className="border-t border-muted-foreground/20 px-3 py-2 align-top">{tube}</td>
+                      <td className="border-t border-muted-foreground/20 px-3 py-2 align-top">
+                        <input
+                          className="w-full rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-xs md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                          placeholder="Student to fill"
+                        />
+                      </td>
+                      <td className="border-t border-muted-foreground/20 px-3 py-2 align-top">
+                        <input
+                          className="w-full rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-xs md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                          placeholder="Student to fill"
+                        />
+                      </td>
+                      <td className="border-t border-muted-foreground/20 px-3 py-2 align-top">
+                        <input
+                          className="w-full rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-xs md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                          placeholder="Student to fill"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <h4 className="font-bold text-primary text-sm md:text-base">Analysis Questions</h4>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              {[
+                'Why does the phenol red change color when we blow bubbles into the tube?',
+                'If carbon fixation occurs during the light-independent stage, why did the procedure call for placing test tubes under light banks?',
+                'Did you see a change in color in the test tube with no elodea added? Why or why not?',
+                'How does a plant use carbon? What is meant by the term \"carbon fixation\"?',
+                'How do plants and animals benefit from photosynthesis?',
+              ].map((question) => (
+                <div key={question} className="space-y-1">
+                  <p className="font-medium">{question}</p>
+                  <textarea
+                    className="w-full rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-xs md:text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[60px]"
+                    placeholder="Write your answer here..."
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ),
