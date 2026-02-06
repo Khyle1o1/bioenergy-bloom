@@ -17,6 +17,8 @@ const OPEN_SECTIONS_KEY = 'lesson2_open_sections';
 const LESSON2_SECTION_IDS = [
   'start-thinking',
   'dive-in',
+  'lets-go-further',
+  'feedback-reflection',
 ] as const;
 
 export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
@@ -936,6 +938,255 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               className="btn-nature text-sm py-2"
             >
               Save assessment
+            </button>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'lets-go-further',
+      title: "Let's Go Further: Structuring the Project",
+      icon: <Target className="w-4 h-4" />,
+      completed: sectionsDone.includes('lets-go-further'),
+      content: (
+        <div className="space-y-6">
+          {/* Part 1: Introduction */}
+          <div className="space-y-3">
+            <h3 className="font-bold text-primary">Let&apos;s Go Further: Structuring the Project</h3>
+            <p className="text-sm text-muted-foreground">
+              You have completed the initial conceptualization of your project and defined your project goals. Now, you
+              will design the structure of your project by planning its procedures and identifying all required
+              materials. As you work, you will continue to use ChatGPT as your learning assistant to help you organize,
+              refine, and improve your project plan.
+            </p>
+          </div>
+
+          {/* Part 2: Project Details Form */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-base">Project Details</h4>
+            <div className="space-y-3 rounded-xl border border-border bg-muted/40 p-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Project Name:</label>
+                <input
+                  type="text"
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  placeholder="Enter your project name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Project Goals:</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[60px]"
+                  placeholder="Enter a project goal"
+                />
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[60px]"
+                  placeholder="Enter another project goal"
+                />
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[60px]"
+                  placeholder="Enter another project goal"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Short description of the project:</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[100px]"
+                  placeholder="Provide a brief description of your project"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Part 3: Planning Layout (Procedures & Materials) */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-base">Project Planning</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Box 1: Procedures */}
+              <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-3">
+                <h5 className="font-semibold text-sm">Procedures</h5>
+                <p className="text-xs text-muted-foreground italic">
+                  Instruction: List the step-by-step methods you will use.
+                </p>
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5].map((step) => (
+                    <div key={step} className="flex items-start gap-2">
+                      <span className="text-sm font-medium mt-1">{step}.</span>
+                      <textarea
+                        className="flex-1 rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[40px]"
+                        placeholder="Describe this procedure step"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Box 2: Project Materials */}
+              <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-3">
+                <h5 className="font-semibold text-sm">Project Materials</h5>
+                <p className="text-xs text-muted-foreground italic">
+                  Instruction: List all equipment and resources required.
+                </p>
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5].map((item) => (
+                    <div key={item} className="flex items-start gap-2">
+                      <span className="text-sm font-medium mt-1">-</span>
+                      <textarea
+                        className="flex-1 rounded-md border border-muted-foreground/30 bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[40px]"
+                        placeholder="List a material, tool, or resource"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Part 4: Visual Placeholder */}
+          <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-4 space-y-2 max-w-md">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">Project Planning and Structure</p>
+            <div className="flex items-center gap-3">
+              <div className="flex-0 w-16 h-16 rounded-lg border-2 border-dashed border-muted-foreground/40 bg-background flex items-center justify-center text-[11px] text-muted-foreground text-center px-2">
+                Insert icon here
+              </div>
+              <p className="text-[11px] text-muted-foreground italic flex-1">
+                [Visual Prompt]: An icon showing a blueprint, a checklist, or a flow chart to represent &quot;Project
+                Planning and Structure.&quot;
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Use AI to help outline your project&apos;s methodology and resource list.
+            </p>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              onClick={() => markDone('lets-go-further')}
+              className="btn-nature text-sm py-2"
+            >
+              Save and continue
+            </button>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'feedback-reflection',
+      title: 'Feedback & Reflection',
+      icon: <Target className="w-4 h-4" />,
+      completed: sectionsDone.includes('feedback-reflection'),
+      content: (
+        <div className="space-y-6">
+          {/* Part 1: Feedbacking Activity Instructions */}
+          <div className="space-y-3">
+            <h3 className="font-bold text-primary">Feedback & Reflection</h3>
+            <p className="text-sm text-muted-foreground">
+              Considering your project structure above, ask your teacher and ChatGPT for their comments and feedback to refine your work.
+            </p>
+          </div>
+
+          {/* Part 2: Feedback Grid Layout */}
+          <div className="space-y-4">
+            {/* Row 1: Collecting Feedback */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Box 1: ChatGPT Feedback */}
+              <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2">
+                <h5 className="font-semibold text-sm text-center">ChatGPT Feedback</h5>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[150px]"
+                  placeholder="Record feedback from ChatGPT here..."
+                />
+              </div>
+
+              {/* Box 2: Teacher Feedback */}
+              <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2">
+                <h5 className="font-semibold text-sm text-center">Teacher Feedback</h5>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[150px]"
+                  placeholder="Record feedback from your teacher here..."
+                />
+              </div>
+            </div>
+
+            {/* Transition Instruction */}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+              <p className="text-sm font-semibold text-center text-muted-foreground">
+                From the given feedback and comments, improve your project procedures and materials below.
+              </p>
+            </div>
+
+            {/* Row 2: Applying Improvements */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Box 3: Improved Project Procedures */}
+              <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2">
+                <h5 className="font-semibold text-sm text-center">Improved Project Procedures</h5>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[150px]"
+                  placeholder="Document your improved project procedures based on feedback..."
+                />
+              </div>
+
+              {/* Box 4: Improved Project Materials */}
+              <div className="rounded-xl border border-border bg-muted/40 p-4 space-y-2">
+                <h5 className="font-semibold text-sm text-center">Improved Project Materials</h5>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[150px]"
+                  placeholder="Document your improved project materials based on feedback..."
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Part 3: Reflection Questions */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-base">Reflection</h4>
+            <div className="space-y-4 rounded-xl border border-border bg-muted/40 p-4">
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  How did the use of ChatGPT help you in this part of making your project?
+                </p>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[100px]"
+                  placeholder="Write your reflection here..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">
+                  What challenges did you encounter in using ChatGPT?
+                </p>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[100px]"
+                  placeholder="Write your reflection here..."
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Part 4: Visual Placeholder */}
+          <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-4 space-y-2 max-w-md">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">Feedback & Reflection</p>
+            <div className="flex items-center gap-3">
+              <div className="flex-0 w-16 h-16 rounded-lg border-2 border-dashed border-muted-foreground/40 bg-background flex items-center justify-center text-[11px] text-muted-foreground text-center px-2">
+                Insert icon here
+              </div>
+              <p className="text-[11px] text-muted-foreground italic flex-1">
+                [Visual Prompt]: An icon showing speech bubbles or a &quot;thumbs up/down&quot; review symbol to represent feedback and iteration.
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Use feedback to refine your scientific process.
+            </p>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              onClick={() => markDone('feedback-reflection')}
+              className="btn-nature text-sm py-2"
+            >
+              Save and continue
             </button>
           </div>
         </div>
