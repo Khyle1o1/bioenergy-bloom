@@ -145,7 +145,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
             </ul>
           </div>
           
-          <PhotosynthesisAnimation />
+      
           
           <div className="p-4 rounded-xl bg-muted">
             <h4 className="font-bold mb-2">🌿 Two Key Processes</h4>
@@ -162,10 +162,191 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
               </div>
             </div>
           </div>
-          
-          <button onClick={() => markDone('dive-in')} className="btn-nature text-sm py-2">
-            I understand! ✓
-          </button>
+
+          {/* Checkpoint questions */}
+          <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 space-y-4">
+            <h4 className="font-bold text-primary">Checkpoint</h4>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                Q1. In your own words, what does bioenergetics study?
+              </p>
+              <textarea
+                className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[80px]"
+                placeholder="Write your answer here..."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                Q2. What is ATP, and why is it important?
+              </p>
+              <textarea
+                className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[80px]"
+                placeholder="Write your answer here..."
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button onClick={() => markDone('dive-in')} className="btn-nature text-sm py-2">
+              Continue ✓
+            </button>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'key-concepts',
+      title: 'Key Concepts in Bioenergetics',
+      icon: <BookOpen className="w-4 h-4" />,
+      completed: sectionsDone.includes('key-concepts'),
+      content: (
+        <div className="space-y-6">
+          <div className="prose prose-sm max-w-none">
+            <p className="text-muted-foreground">
+              Bioenergetics is the study of how living organisms obtain, use, and transform energy. All life processes—such as movement, growth, repair, and metabolism—require energy. Without proper energy transformation, cells cannot function and life cannot be sustained.
+            </p>
+            <p className="text-muted-foreground">
+              One important role of bioenergetics is helping us understand how energy supports cellular activities and how these energy changes follow scientific laws.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-primary mb-2">Energy Transformations in Living Organisms</h4>
+            <p className="text-muted-foreground text-sm mb-3">
+              Energy in biological systems exists in different forms. Two important types of energy are <strong>potential energy</strong> and <strong>kinetic energy</strong>.
+            </p>
+            <ul className="text-muted-foreground text-sm space-y-2 list-disc pl-5">
+              <li><strong>Potential energy</strong> is stored energy. In living organisms, this energy is stored in the chemical bonds of molecules, such as glucose.</li>
+              <li><strong>Kinetic energy</strong> is the energy of movement. This energy is observed when organisms perform work, such as muscle contraction or the movement of substances inside cells.</li>
+            </ul>
+            <p className="text-muted-foreground text-sm mt-3">
+              Cells continuously transform stored energy into usable energy so that biological processes can occur.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-primary mb-2">Energy Release During Cellular Respiration</h4>
+            <p className="text-muted-foreground text-sm mb-2">
+              During cellular respiration, cells break down glucose. The potential energy stored in glucose is released and converted into kinetic energy through chemical reactions.
+            </p>
+            <p className="text-muted-foreground text-sm mb-2">
+              This released energy is used to produce <strong>ATP (adenosine triphosphate)</strong>. ATP is the main energy molecule used by cells. It powers cellular activities such as:
+            </p>
+            <ul className="text-muted-foreground text-sm list-disc pl-5 space-y-1">
+              <li>Muscle movement</li>
+              <li>Synthesis of new molecules</li>
+              <li>Transport of substances across cell membranes</li>
+            </ul>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 mt-4 space-y-2">
+              <h4 className="font-bold text-primary text-sm">✅ Checkpoint</h4>
+              <p className="text-sm font-medium">Q3. What type of energy is stored in the chemical bonds of glucose?</p>
+              <textarea
+                className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[80px]"
+                placeholder="Write your answer here..."
+              />
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-primary mb-2">Bioenergetics and the Laws of Thermodynamics</h4>
+            <p className="text-muted-foreground text-sm mb-2">
+              Bioenergetics follows the laws of thermodynamics.
+            </p>
+            <p className="text-muted-foreground text-sm mb-2">
+              The <strong>First Law of Thermodynamics</strong> states that energy cannot be created or destroyed—it can only be transformed from one form to another. When organisms convert food into energy, the total amount of energy remains the same, but its form changes.
+            </p>
+            <p className="text-muted-foreground text-sm mb-2">
+              The <strong>Second Law of Thermodynamics</strong> explains that during energy transformations, some energy is lost as heat. This loss increases disorder, or entropy, in the system. As energy is released during cellular respiration, part of it is converted into heat and cannot be used by the cell.
+            </p>
+            <p className="text-muted-foreground text-sm">
+              Because of this, cells cannot convert all the energy from glucose into ATP. They are efficient, but not perfectly efficient.
+            </p>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 mt-4 space-y-2">
+              <h4 className="font-bold text-primary text-sm">✅ Checkpoint</h4>
+              <p className="text-sm font-medium">Q4. Explain the First Law of Thermodynamics in your own words. Give an example of energy transformation.</p>
+              <textarea
+                className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[80px]"
+                placeholder="Write your answer here..."
+              />
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-primary mb-2">Why Energy Conversion Is Not 100% Efficient</h4>
+            <p className="text-muted-foreground text-sm mb-2">
+              Not all the potential energy stored in glucose becomes usable ATP. During chemical reactions, some energy is released as heat instead of being captured in ATP molecules.
+            </p>
+            <p className="text-muted-foreground text-sm">
+              This heat loss is a natural result of energy transformation and explains why organisms must constantly obtain energy from food to maintain their functions.
+            </p>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 mt-4 space-y-2">
+              <h4 className="font-bold text-primary text-sm">✅ Checkpoint</h4>
+              <p className="text-sm font-medium">Q5. Why isn&apos;t all the potential energy in glucose converted into usable ATP?</p>
+              <textarea
+                className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[80px]"
+                placeholder="Write your answer here..."
+              />
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-primary mb-2">Photosynthesis and Cellular Respiration</h4>
+            <p className="text-muted-foreground text-sm mb-2">
+              The metabolic pathways of photosynthesis and cellular respiration clearly demonstrate bioenergetic principles.
+            </p>
+            <ul className="text-muted-foreground text-sm list-disc pl-5 space-y-1 mb-2">
+              <li>During <strong>photosynthesis</strong>, plants capture energy from sunlight and store it as chemical energy in glucose.</li>
+              <li>During <strong>cellular respiration</strong>, organisms break down glucose to release the stored energy for cellular use.</li>
+            </ul>
+            <p className="text-muted-foreground text-sm mb-2">
+              These two processes are closely connected. Cellular respiration can be considered the reverse of photosynthesis. Together, they show how energy flows through living systems.
+            </p>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 mt-4 space-y-2">
+              <h4 className="font-bold text-primary text-sm">✅ Checkpoint</h4>
+              <p className="text-sm font-medium">Q6. What are the key differences between photosynthesis and cellular respiration?</p>
+              <textarea
+                className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[80px]"
+                placeholder="Write your answer here..."
+              />
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-primary mb-2">Energy Flow in Ecosystems</h4>
+            <p className="text-muted-foreground text-sm mb-2">
+              Energy flows through ecosystems in a one-way direction. <strong>Autotrophs</strong>, such as plants, capture energy from sunlight. <strong>Heterotrophs</strong>, such as animals, obtain energy by consuming plants or other organisms.
+            </p>
+            <p className="text-muted-foreground text-sm">
+              This continuous flow of energy supports all life on Earth.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-muted border border-border space-y-4">
+            <h4 className="font-bold mb-2">📝 Assessment</h4>
+            <p className="text-sm text-muted-foreground">Write your answers below.</p>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">What are the key concepts related to bioenergetics?</p>
+              <textarea
+                className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[80px]"
+                placeholder="Write your answer here..."
+              />
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">How is energy transformation observed in bioenergetics?</p>
+              <textarea
+                className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-y min-h-[80px]"
+                placeholder="Write your answer here..."
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button onClick={() => markDone('key-concepts')} className="btn-nature text-sm py-2">
+              Continue ✓
+            </button>
+          </div>
         </div>
       ),
     },
