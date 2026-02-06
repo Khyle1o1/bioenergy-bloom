@@ -7,6 +7,10 @@ interface Lesson2Props {
   completed: boolean;
 }
 
+// Editable path for the chloroplast animation video.
+// Update this string if you replace the file or move it.
+const CHLOROPLAST_VIDEO_SRC = '/Chloroplast_GIF_Animation_Request.mp4';
+
 const SECTIONS_DONE_KEY = 'lesson2_sections_done';
 const OPEN_SECTIONS_KEY = 'lesson2_open_sections';
 
@@ -286,31 +290,123 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-bold text-primary">The Main Structure and Process of Photosynthesis</h4>
+            <h4 className="font-bold text-primary">The Main Structures in Photosynthesis</h4>
             <p className="text-sm text-muted-foreground">
-              In plants, photosynthesis primarily involves three main structures:
+              In plants, photosynthesis depends on three key structures in the leaf:
               <strong> chloroplasts</strong>, <strong>mesophyll</strong>, and <strong>stomata</strong>.
             </p>
             <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
               <li>
-                <strong>Chloroplasts</strong> are specialized organelles where photosynthesis takes place. They
-                contain stacks of thylakoids and the surrounding fluid called stroma.
+                <strong>Chloroplasts</strong> are tiny green organelles inside plant cells where most of
+                photosynthesis happens. Each chloroplast is surrounded by a double membrane and filled with a
+                fluid called <strong>stroma</strong>, where the Calvin cycle takes place.
+              </li>
+              <li>
+                Inside the chloroplast, flat sacs called <strong>thylakoids</strong> are stacked into columns
+                known as <strong>grana</strong>. The thylakoid membranes hold <strong>chlorophyll</strong>, the
+                pigment that captures light energy.
               </li>
               <li>
                 The <strong>mesophyll</strong> is the inner tissue of the leaf. Palisade mesophyll is packed with
-                chloroplasts for maximum light absorption, while spongy mesophyll leaves space for gas exchange.
+                chloroplasts for maximum light absorption, while spongy mesophyll leaves air spaces for gas
+                exchange.
               </li>
               <li>
-                <strong>Stomata</strong> are small openings on the leaf surface that allow carbon dioxide to enter
-                and oxygen to exit.
+                <strong>Stomata</strong> are tiny pores on the leaf surface that open and close to let carbon
+                dioxide in and release oxygen and water vapor.
               </li>
             </ul>
             <p className="text-sm text-muted-foreground">
-              Photosynthesis occurs in two major stages: the <strong>light-dependent reactions</strong> and the
+              Together, these structures allow the plant to capture light, take in carbon dioxide and water, and
+              turn them into glucose and oxygen through the <strong>light-dependent reactions</strong> and the
               <strong> light-independent reactions</strong> (Calvin cycle).
             </p>
+
+            <div className="pt-2 space-y-4">
+                <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-3 space-y-2 max-w-5xl mx-auto">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">
+                    Overview of the Chloroplast
+                  </p>
+                  <button
+                    type="button"
+                    className="mx-auto block max-w-3xl w-full"
+                    onClick={() =>
+                      setLightboxImage({
+                        src: '/animated.gif',
+                        alt: 'Animation illustrating the chloroplast and photosynthesis process.',
+                      })
+                    }
+                    >
+                      <img
+                        className="w-full rounded-md"
+                        src="/animated.gif"
+                        alt="Animation illustrating the chloroplast and photosynthesis process."
+                      />
+                  </button>
+                    <p className="text-xs text-muted-foreground">
+                        Chloroplasts are found in all higher plants. It is oval or biconvex, found within the
+                        mesophyll of the plant cell. The size of the chloroplast usually varies between 4-6 µm in
+                        diameter and 1-3 µm in thickness. They are double-membrane organelle with the presence of
+                        outer, inner and intermembrane space.   
+                    </p>
+                </div>
+              </div>
+
+            
+
+            <div className="mt-4 space-y-3">
+              <h4 className="font-bold text-primary">Leaf Anatomy &amp; The Light-Dependent Reaction</h4>
+              <p className="text-sm text-muted-foreground">
+                Chloroplasts are specialized, oval-shaped organelles found mainly in the mesophyll cells of higher
+                plants. Each chloroplast is typically about 4–6&nbsp;µm in diameter and 1–3&nbsp;µm thick and is
+                enclosed by a double membrane (outer and inner) with a narrow intermembrane space in between.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                The mesophyll is the inner tissue of the leaf and is organized into two layers with different jobs:
+                the <strong>palisade mesophyll</strong>, which is tightly packed with chloroplasts to capture as much
+                light as possible, and the <strong>spongy mesophyll</strong>, which has many air spaces to allow
+                efficient gas exchange. Small openings on the leaf surface called <strong>stomata</strong> open and
+                close to let carbon dioxide enter the leaf and release oxygen as a by-product.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Photosynthesis can be divided into two main stages: <strong>light-dependent reactions</strong> and
+                <strong> light-independent reactions</strong> (Calvin cycle).
+              </p>
+
+              {/* Visual placeholders for reference diagrams */}
+              <div className="pt-2 space-y-4">
+                <div className="rounded-xl border border-muted-foreground/30 bg-muted/20 p-3 space-y-2 max-w-5xl mx-auto">
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">
+                    The Thylakoid Membrane Diagram
+                  </p>
+                  <button
+                    type="button"
+                    className="w-full"
+                    onClick={() =>
+                      setLightboxImage({
+                        src: '/thylakoid membrane.svg',
+                        alt: 'Diagram of the thylakoid membrane showing photosystems, electron carriers, and ATP synthase.',
+                      })
+                    }
+                  >
+                    <img
+                      className="w-full h-auto rounded-md"
+                      src="/thylakoid membrane.svg"
+                      alt="Diagram of the thylakoid membrane showing photosystems, electron carriers, and ATP synthase."
+                    />
+                  </button>
+                  <p className="text-xs text-muted-foreground">
+                    A diagram of the thylakoid membrane where the light-dependent reaction
+                    occurs. This shows photosystems II and I, electron carriers, and the ATP synthase protein complex.
+                  </p>
+                </div>
+              </div>
+
+              
+            </div>
           </div>
 
+        
           {/* Checkpoint 1–2 */}
           <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 space-y-3">
             <h4 className="font-bold text-primary text-sm">Checkpoint</h4>
@@ -332,29 +428,42 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
             </div>
           </div>
 
-          <div className="space-y-3">
-            <h4 className="font-bold text-primary">Steps for the Light-Dependent Reactions</h4>
+          <div className="space-y-3 pt-2">
+            <h4 className="font-bold text-primary text-sm md:text-base">Steps for Light-Dependent Reaction</h4>
             <ol className="list-decimal pl-5 space-y-2 text-sm text-muted-foreground">
               <li>
-                <strong>Photon absorption</strong>: Chlorophyll and other pigments in the thylakoid membranes absorb
-                light energy and excite electrons.
+                <strong>Photon Absorption</strong>: Chlorophyll and other pigments in the thylakoid membranes absorb
+                light energy, primarily in the blue and red wavelengths. This energy excites electrons, which are
+                then transferred to a primary electron acceptor.
               </li>
               <li>
-                <strong>Water splitting (photolysis)</strong>: Water molecules are split into oxygen, protons, and
-                electrons. Oxygen is released as a by-product.
+                <strong>Water Splitting (Photolysis)</strong>: Water molecules (H₂O) are split into oxygen (O₂),
+                protons (H⁺), and electrons. The equation for this process can be summarized as:
+                <span className="block font-semibold mt-1 mb-1">2H₂O → 4H⁺ + 4e⁻ + O₂</span>
+                The released oxygen is expelled as a by-product.
               </li>
               <li>
-                <strong>Electron transport chain (ETC)</strong>: Excited electrons move through carrier proteins,
-                creating a proton gradient across the thylakoid membrane.
+                <strong>Electron Transport Chain</strong>: Excited electrons travel through a series of proteins in the
+                electron transport chain (ETC). As they move, they lose energy, which is used to pump protons into the
+                thylakoid lumen, creating a proton gradient.
               </li>
               <li>
-                <strong>ATP and NADPH formation</strong>: The proton gradient powers ATP synthase to produce ATP,
-                while electrons reduce NADP⁺ to NADPH.
+                <strong>ATP and NADPH Formation</strong>: The proton gradient drives ATP synthase to produce ATP from
+                ADP and inorganic phosphate (Pi). Concurrently, the electrons reduce NADP⁺ to form NADPH.
               </li>
             </ol>
-            <p className="text-sm text-muted-foreground">
-              The main products of the light-dependent reactions are ATP, NADPH, and oxygen.
-            </p>
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <p className="font-semibold">Summary of Products</p>
+              <p>
+                <strong>ATP</strong>: Energy currency used in the Calvin cycle.
+              </p>
+              <p>
+                <strong>NADPH</strong>: Reducing power for converting carbon dioxide into glucose.
+              </p>
+              <p>
+                <strong>Oxygen (O₂)</strong>: Released into the atmosphere as a by-product.
+              </p>
+            </div>
           </div>
 
           {/* Checkpoint 3–5 */}
