@@ -103,6 +103,16 @@ const initialPairData: PairData = {
   finalAnswer: '',
 };
 
+const LESSON1_SECTION_IDS = [
+  'objectives',
+  'start-thinking',
+  'dive-in',
+  'key-concepts',
+  'pair',
+  'show-what',
+  'go-further',
+] as const;
+
 export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
   const [sectionsDone, setSectionsDone] = useState<string[]>(() => {
     try {
@@ -248,6 +258,10 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
     }
   };
 
+  const allSectionsCompleted = LESSON1_SECTION_IDS.every((id) =>
+    sectionsDone.includes(id)
+  );
+
   const sections = [
     {
       id: 'objectives',
@@ -273,7 +287,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
             ))}
           </ul>
           <button onClick={() => markDone('objectives')} className="btn-nature text-sm py-2 mt-2">
-            Got it! ?
+            Got it!
           </button>
         </div>
       ),
@@ -286,7 +300,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
       content: (
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-sunlight/10 border border-sunlight/20">
-            <p className="font-semibold mb-2">?? Think About This:</p>
+            <p className="font-semibold mb-2">Think About This:</p>
             <p className="text-sm text-muted-foreground">
               Like the coffee plants in Bukidnon's highlands, all living things need energy. 
               But where does this energy come from? How do plants "eat" sunlight?
@@ -331,17 +345,17 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
       
           
           <div className="p-4 rounded-xl bg-muted">
-            <h4 className="font-bold mb-2">?? Two Key Processes</h4>
+            <h4 className="font-bold mb-2">Two Key Processes</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-chlorophyll/10 border border-chlorophyll/20">
                 <p className="font-semibold text-chlorophyll">Photosynthesis</p>
-                <p className="text-xs text-muted-foreground">Light energy ? Chemical energy (glucose)</p>
-                <p className="text-xs">?? Chloroplast</p>
+                <p className="text-xs text-muted-foreground">Light energy → Chemical energy (glucose)</p>
+                <p className="text-xs">Chloroplast</p>
               </div>
               <div className="p-3 rounded-lg bg-atp/10 border border-atp/20">
                 <p className="font-semibold text-atp">Cellular Respiration</p>
-                <p className="text-xs text-muted-foreground">Glucose ? ATP energy</p>
-                <p className="text-xs">?? Mitochondria</p>
+                <p className="text-xs text-muted-foreground">Glucose → ATP energy</p>
+                <p className="text-xs">Mitochondria</p>
               </div>
             </div>
           </div>
@@ -373,7 +387,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
 
           <div className="flex justify-end">
             <button onClick={() => markDone('dive-in')} className="btn-nature text-sm py-2">
-              Continue ?
+              Continue
             </button>
           </div>
         </div>
@@ -507,7 +521,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
           </div>
 
           <div className="p-4 rounded-xl bg-muted border border-border space-y-4">
-            <h4 className="font-bold mb-2">?? Assessment</h4>
+            <h4 className="font-bold mb-2">Assessment</h4>
             <p className="text-sm text-muted-foreground">Write your answers below.</p>
             <div className="space-y-2">
               <p className="text-sm font-medium">What are the key concepts related to bioenergetics?</p>
@@ -527,7 +541,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
 
           <div className="flex justify-end">
             <button onClick={() => markDone('key-concepts')} className="btn-nature text-sm py-2">
-              Continue ?
+              Continue
             </button>
           </div>
         </div>
@@ -590,7 +604,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
                 onClick={() => advancePairStage(2)}
                 className="btn-nature text-sm py-2"
               >
-                Submit initial answer ?
+                Submit initial answer
               </button>
             </div>
           )}
@@ -630,7 +644,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
                 onClick={() => advancePairStage(3)}
                 className="btn-nature text-sm py-2"
               >
-                Continue to AI feedback ?
+                Continue to AI feedback
               </button>
             </div>
           )}
@@ -661,7 +675,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
                 onClick={() => advancePairStage(4)}
                 className="btn-nature text-sm py-2"
               >
-                Continue to teacher review ?
+                Continue to teacher review
               </button>
             </div>
           )}
@@ -690,7 +704,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
                 onClick={() => advancePairStage(5)}
                 className="btn-nature text-sm py-2"
               >
-                Continue to reflection ?
+                Continue to reflection
               </button>
             </div>
           )}
@@ -720,7 +734,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
                 onClick={() => advancePairStage(6)}
                 className="btn-nature text-sm py-2"
               >
-                Continue to final answer ?
+                Continue to final answer
               </button>
             </div>
           )}
@@ -747,7 +761,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
                 }}
                 className="btn-nature text-sm py-2"
               >
-                Complete PAIR ?
+                Complete PAIR
               </button>
             </div>
           )}
@@ -855,7 +869,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
 
           <div className="flex justify-end">
             <button onClick={submitShowWhat} className="btn-nature text-sm py-2">
-              Submit ?
+              Submit
             </button>
           </div>
         </div>
@@ -1051,28 +1065,40 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <button onClick={() => markDone('go-further')} className="btn-nature text-sm py-2">
-              Done ?
+              Done
             </button>
+            {allSectionsCompleted && !completed && (
+              <button
+                onClick={() => onComplete(5)}
+                className="btn-nature text-sm py-2"
+              >
+                Proceed to next lesson
+              </button>
+            )}
           </div>
         </div>
       ),
     },
   ];
 
+  const completedSectionsCount = sectionsDone.filter((id) =>
+    sections.some((section) => section.id === id)
+  ).length;
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
-          <span className="text-3xl">??</span> Lesson 1: Bioenergetics
+          Lesson 1: Bioenergetics
         </h1>
         <p className="text-muted-foreground">
           Understanding energy flow in living systems
         </p>
         <div className="mt-2 flex items-center gap-2 text-sm">
           <span className="px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
-            {sectionsDone.length}/{sections.length} sections
+            {completedSectionsCount}/{sections.length} sections
           </span>
           {completed && (
             <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium flex items-center gap-1">

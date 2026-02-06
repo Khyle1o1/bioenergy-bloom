@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown, CheckCircle, BookOpen } from 'lucide-react';
 
 interface Section {
@@ -23,12 +23,16 @@ export function LessonAccordion({ sections, initialOpenSections, onOpenSectionsC
     return sections[0]?.id ? [sections[0].id] : [];
   });
 
+  useEffect(() => {
+    if (onOpenSectionsChange) {
+      onOpenSectionsChange(openSections);
+    }
+  }, [openSections, onOpenSectionsChange]);
+
   const toggleSection = (id: string) => {
-    setOpenSections((prev) => {
-      const next = prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id];
-      onOpenSectionsChange?.(next);
-      return next;
-    });
+    setOpenSections((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+    );
   };
 
   return (
