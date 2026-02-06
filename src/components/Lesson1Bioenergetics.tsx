@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Lightbulb, Target, BookOpen, FlaskConical, Award, Rocket } from 'lucide-react';
+import { Lightbulb, Target, BookOpen, FlaskConical, Award, Rocket, MessageSquare } from 'lucide-react';
 import { LessonAccordion } from './LessonAccordion';
 import { DragDropMatch } from './DragDropMatch';
 import { QuizComponent } from './QuizComponent';
@@ -20,6 +20,33 @@ const MATCH_ITEMS = [
 
 const SECTIONS_DONE_KEY = 'lesson1_sections_done';
 const OPEN_SECTIONS_KEY = 'lesson1_open_sections';
+const PAIR_DATA_KEY = 'lesson1_pair_data';
+
+type PairStage = 1 | 2 | 3 | 4 | 5 | 6;
+
+interface PairData {
+  stage: PairStage;
+  followUpQuestion: string;
+  initialAnswer: string;
+  peerStrength: string;
+  peerSuggestion: string;
+  aiFeedback: string;
+  teacherFeedback: string;
+  reflection: string;
+  finalAnswer: string;
+}
+
+const initialPairData: PairData = {
+  stage: 1,
+  followUpQuestion: '',
+  initialAnswer: '',
+  peerStrength: '',
+  peerSuggestion: '',
+  aiFeedback: '',
+  teacherFeedback: '',
+  reflection: '',
+  finalAnswer: '',
+};
 
 export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
   const [sectionsDone, setSectionsDone] = useState<string[]>(() => {
@@ -43,6 +70,19 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
     }
   });
 
+  const [pairData, setPairData] = useState<PairData>(() => {
+    try {
+      const saved = localStorage.getItem(PAIR_DATA_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as PairData;
+        return { ...initialPairData, ...parsed, stage: Math.min(parsed.stage ?? 1, 6) as PairStage };
+      }
+      return initialPairData;
+    } catch {
+      return initialPairData;
+    }
+  });
+
   useEffect(() => {
     try {
       localStorage.setItem(SECTIONS_DONE_KEY, JSON.stringify(sectionsDone));
@@ -58,6 +98,22 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
       // ignore write errors
     }
   }, [openSections]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(PAIR_DATA_KEY, JSON.stringify(pairData));
+    } catch {
+      // ignore
+    }
+  }, [pairData]);
+
+  const updatePair = (updates: Partial<PairData>) => {
+    setPairData((prev) => ({ ...prev, ...updates }));
+  };
+
+  const advancePairStage = (next: PairStage) => {
+    setPairData((prev) => ({ ...prev, stage: next }));
+  };
 
   const markDone = (id: string) => {
     if (!sectionsDone.includes(id)) {
@@ -347,6 +403,227 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
               Continue ✓
             </button>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: 'pair',
+      title: 'PAIR: Follow-up on Bioenergetics',
+      icon: <MessageSquare className="w-4 h-4" />,
+      completed: sectionsDone.includes('pair'),
+      content: (
+        <div className="space-y-6">
+          <p className="text-sm text-muted-foreground">
+            Use the PAIR approach (Produce → Assess → Improve → Reflect) to deepen your understanding. Work through each stage in order.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {([1, 2, 3, 4, 5, 6] as const).map((s) => (
+              <span
+                key={s}
+                className={`px-2 py-1 rounded text-xs font-medium ${
+                  pairData.stage === s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {s === 1 && 'Produce'}
+                {s === 2 && 'Peer Assess'}
+                {s === 3 && 'Improve'}
+                {s === 4 && 'Teacher'}
+                {s === 5 && 'Reflect'}
+                {s === 6 && 'Produce again'}
+              </span>
+            ))}
+          </div>
+
+          {/* Stage 1 – PRODUCE */}
+          {pairData.stage === 1 && (
+            <div className="space-y-4 p-4 rounded-xl border border-border bg-muted/30">
+              <h4 className="font-bold text-primary">Stage 1 – Produce (Your initial answer)</h4>
+              <p className="text-sm text-muted-foreground">
+                Submit a follow-up question about Bioenergetics and write your initial answer using only your current understanding. You will not receive corrections or answers at this stage.
+              </p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Your follow-up question</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[80px]"
+                  placeholder="e.g. How does the second law of thermodynamics affect ATP production?"
+                  value={pairData.followUpQuestion}
+                  onChange={(e) => updatePair({ followUpQuestion: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Your initial answer</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[120px]"
+                  placeholder="Write your answer based on what you know so far..."
+                  value={pairData.initialAnswer}
+                  onChange={(e) => updatePair({ initialAnswer: e.target.value })}
+                />
+              </div>
+              <button
+                onClick={() => advancePairStage(2)}
+                className="btn-nature text-sm py-2"
+              >
+                Submit initial answer →
+              </button>
+            </div>
+          )}
+
+          {/* Stage 2 – ASSESS (Peer feedback) */}
+          {pairData.stage === 2 && (
+            <div className="space-y-4 p-4 rounded-xl border border-border bg-muted/30">
+              <h4 className="font-bold text-primary">Stage 2 – Assess (Peer feedback)</h4>
+              <p className="text-sm text-muted-foreground">
+                A peer will review your answer. Feedback must include at least one strength and one suggestion for improvement.
+              </p>
+              <div className="p-3 rounded-lg bg-background border text-sm space-y-2">
+                <p className="font-medium">Question:</p>
+                <p className="text-muted-foreground">{pairData.followUpQuestion || '—'}</p>
+                <p className="font-medium mt-2">Your initial answer:</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{pairData.initialAnswer || '—'}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Peer feedback – Strength</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[60px]"
+                  placeholder="What did the student do well?"
+                  value={pairData.peerStrength}
+                  onChange={(e) => updatePair({ peerStrength: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Peer feedback – Suggestion for improvement</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[60px]"
+                  placeholder="What could be clarified or improved?"
+                  value={pairData.peerSuggestion}
+                  onChange={(e) => updatePair({ peerSuggestion: e.target.value })}
+                />
+              </div>
+              <button
+                onClick={() => advancePairStage(3)}
+                className="btn-nature text-sm py-2"
+              >
+                Continue to AI feedback →
+              </button>
+            </div>
+          )}
+
+          {/* Stage 3 – IMPROVE (AI feedback) */}
+          {pairData.stage === 3 && (
+            <div className="space-y-4 p-4 rounded-xl border border-border bg-muted/30">
+              <h4 className="font-bold text-primary">Stage 3 – Improve (AI feedback)</h4>
+              <p className="text-sm text-muted-foreground">
+                After peer feedback, you may receive constructive AI feedback. It will suggest what to improve and may ask guiding questions—it will not give a corrected answer or full explanation.
+              </p>
+              <div className="p-3 rounded-lg bg-background border text-sm space-y-2">
+                <p className="font-medium">Peer strength:</p>
+                <p className="text-muted-foreground">{pairData.peerStrength || '—'}</p>
+                <p className="font-medium">Peer suggestion:</p>
+                <p className="text-muted-foreground">{pairData.peerSuggestion || '—'}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">AI feedback (coach-style)</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[100px]"
+                  placeholder="AI feedback will appear here when provided. It identifies misconceptions, suggests what to improve, and may ask guiding questions—not a model answer."
+                  value={pairData.aiFeedback}
+                  onChange={(e) => updatePair({ aiFeedback: e.target.value })}
+                />
+              </div>
+              <button
+                onClick={() => advancePairStage(4)}
+                className="btn-nature text-sm py-2"
+              >
+                Continue to teacher review →
+              </button>
+            </div>
+          )}
+
+          {/* Stage 4 – ASSESS (Teacher feedback) */}
+          {pairData.stage === 4 && (
+            <div className="space-y-4 p-4 rounded-xl border border-border bg-muted/30">
+              <h4 className="font-bold text-primary">Stage 4 – Assess (Teacher feedback)</h4>
+              <p className="text-sm text-muted-foreground">
+                The teacher will review your initial answer, peer feedback, and AI feedback. Their feedback is authoritative and may include corrections or rubric-based evaluation.
+              </p>
+              <div className="p-3 rounded-lg bg-background border text-sm space-y-2">
+                <p className="font-medium">AI feedback:</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{pairData.aiFeedback || '—'}</p>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Teacher feedback</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[100px]"
+                  placeholder="Teacher feedback will appear here when provided."
+                  value={pairData.teacherFeedback}
+                  onChange={(e) => updatePair({ teacherFeedback: e.target.value })}
+                />
+              </div>
+              <button
+                onClick={() => advancePairStage(5)}
+                className="btn-nature text-sm py-2"
+              >
+                Continue to reflection →
+              </button>
+            </div>
+          )}
+
+          {/* Stage 5 – REFLECT */}
+          {pairData.stage === 5 && (
+            <div className="space-y-4 p-4 rounded-xl border border-border bg-muted/30">
+              <h4 className="font-bold text-primary">Stage 5 – Reflect</h4>
+              <p className="text-sm text-muted-foreground">
+                Complete a reflection before writing your final answer. Consider:
+              </p>
+              <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
+                <li>What concept was misunderstood initially?</li>
+                <li>Which feedback was most helpful and why?</li>
+                <li>How has your understanding of bioenergetics changed?</li>
+              </ul>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Your reflection</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[120px]"
+                  placeholder="Write your honest reflection..."
+                  value={pairData.reflection}
+                  onChange={(e) => updatePair({ reflection: e.target.value })}
+                />
+              </div>
+              <button
+                onClick={() => advancePairStage(6)}
+                className="btn-nature text-sm py-2"
+              >
+                Continue to final answer →
+              </button>
+            </div>
+          )}
+
+          {/* Stage 6 – PRODUCE AGAIN */}
+          {pairData.stage === 6 && (
+            <div className="space-y-4 p-4 rounded-xl border border-border bg-muted/30">
+              <h4 className="font-bold text-primary">Stage 6 – Produce again (Final answer)</h4>
+              <p className="text-sm text-muted-foreground">
+                Write your final answer using insights from peer feedback, AI feedback, teacher feedback, and your reflection. Integrate the feedback and explain concepts clearly. Your final answer must be entirely your own writing.
+              </p>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Your final answer</label>
+                <textarea
+                  className="w-full rounded-md border border-muted-foreground/30 bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary resize-y min-h-[140px]"
+                  placeholder="Write your improved answer..."
+                  value={pairData.finalAnswer}
+                  onChange={(e) => updatePair({ finalAnswer: e.target.value })}
+                />
+              </div>
+              <button
+                onClick={() => {
+                  markDone('pair');
+                }}
+                className="btn-nature text-sm py-2"
+              >
+                Complete PAIR ✓
+              </button>
+            </div>
+          )}
         </div>
       ),
     },
