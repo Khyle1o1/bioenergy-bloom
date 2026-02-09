@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const CURRENT_SECTION_KEY_PREFIX = 'lesson_current_section_';
-
 interface UseLessonNavigationOptions {
   lessonId: string;
   totalSections: number;
@@ -17,41 +15,9 @@ export function useLessonNavigation({
   sectionIds,
   onSectionChange,
 }: UseLessonNavigationOptions) {
-  const storageKey = `${CURRENT_SECTION_KEY_PREFIX}${lessonId}`;
-
-  // Track whether we're in slide mode (lesson started) or intro mode
-  const [isLessonStarted, setIsLessonStarted] = useState(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved !== null;
-    } catch {
-      return false;
-    }
-  });
-
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved !== null) {
-        const index = parseInt(saved, 10);
-        return isNaN(index) ? 0 : Math.min(index, totalSections - 1);
-      }
-      return 0;
-    } catch {
-      return 0;
-    }
-  });
-
-  // Persist current section
-  useEffect(() => {
-    if (isLessonStarted) {
-      try {
-        localStorage.setItem(storageKey, String(currentSectionIndex));
-      } catch {
-        // ignore
-      }
-    }
-  }, [currentSectionIndex, isLessonStarted, storageKey]);
+  // NO localStorage - everything in memory only
+  const [isLessonStarted, setIsLessonStarted] = useState(false);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
   // Keyboard navigation
   useEffect(() => {
@@ -72,8 +38,7 @@ export function useLessonNavigation({
   }, [isLessonStarted, currentSectionIndex, totalSections]);
 
   const startLesson = useCallback(() => {
-    // If there's progress, resume from last incomplete or current position
-    // Otherwise start from beginning
+    // Always start from beginning or first incomplete section
     const firstIncompleteIndex = sectionIds.findIndex(id => !sectionsDone.includes(id));
     const startIndex = firstIncompleteIndex >= 0 ? firstIncompleteIndex : 0;
     
@@ -113,15 +78,9 @@ export function useLessonNavigation({
   const isCurrentSectionDone = sectionsDone.includes(currentSectionId);
   const completedSectionsCount = sectionsDone.length;
   
-  // Check if the lesson has ever been started (has stored section position)
-  const hasLessonEverStarted = (() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved !== null;
-    } catch {
-      return false;
-    }
-  })();
+  // Check if the lesson has ever been started by checking if any sections are completed
+  // This is more reliable than localStorage which can have stale data
+  const hasLessonEverStarted = sectionsDone.length > 0;
 
   return {
     isLessonStarted,

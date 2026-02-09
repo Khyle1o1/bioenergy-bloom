@@ -9,6 +9,7 @@ import {
   CheckCircle,
   XCircle,
 } from 'lucide-react';
+import { useAnswerLogger } from '@/hooks/useAnswerLogger';
 
 interface PreTestProps {
   onComplete: (score: number) => void;
@@ -32,6 +33,7 @@ export function PreTest({
   onBackToResults,
   onFullscreenChange,
 }: PreTestProps) {
+  const { logMultipleAnswers } = useAnswerLogger();
   const [phase, setPhase] = useState<'intro' | 'question' | 'results' | 'review'>(() => {
     // If the learner has already completed the pre-test (e.g., returning from
     // the dashboard to review), start directly on the read-only review page
@@ -85,6 +87,10 @@ export function PreTest({
   }, [phase, onFullscreenChange]);
 
   const handleStart = () => {
+    // Prevent starting if already completed
+    if (completed) {
+      return;
+    }
     setPhase('question');
     setCurrentIndex(0);
   };
@@ -126,7 +132,7 @@ export function PreTest({
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     let correct = 0;
     preTestQuestions.forEach((q, idx) => {
       if (answers[idx] === q.correctAnswer) {
@@ -145,6 +151,25 @@ export function PreTest({
       }
     } catch {
       // Ignore storage write errors
+    }
+
+    // Log all answers to database (only log once per submission)
+    // Check if already completed to prevent duplicate logging
+    if (!completed) {
+      const answerLogs = preTestQuestions.map((q, idx) => ({
+        activity_type: 'pretest' as const,
+        activity_name: `Pre-Test Question ${q.id}`,
+        question_id: `pretest_q${q.id}`,
+        question_text: q.question,
+        selected_answer: answers[idx] !== -1 ? q.options[answers[idx]] : 'Not answered',
+        correct_answer: q.options[q.correctAnswer],
+        is_correct: answers[idx] === q.correctAnswer,
+      }));
+
+      console.log('[PreTest] Logging answers to database...', answerLogs.length, 'questions');
+      await logMultipleAnswers(answerLogs);
+    } else {
+      console.log('[PreTest] Skipping answer logging - pre-test already completed');
     }
 
     onComplete(correct);
@@ -203,18 +228,28 @@ export function PreTest({
                 ✅ Pre-Test Completed: {finalScore}/{totalQuestions} ({percentage}%)
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                You can review the questions again or jump straight into Lesson 1.
+                Pre-test already completed. You can review your answers below.
               </p>
             </div>
           )}
 
-          <button
-            onClick={handleStart}
-            className="btn-nature px-8 py-3 text-base font-semibold inline-flex items-center justify-center gap-2"
-          >
-            Start Pre-Test
-            <ChevronRight className="w-5 h-5" />
-          </button>
+          {!completed ? (
+            <button
+              onClick={handleStart}
+              className="btn-nature px-8 py-3 text-base font-semibold inline-flex items-center justify-center gap-2"
+            >
+              Start Pre-Test
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setPhase('review')}
+              className="btn-nature px-8 py-3 text-base font-semibold inline-flex items-center justify-center gap-2"
+            >
+              Review Answers
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
     );

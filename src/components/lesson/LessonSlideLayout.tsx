@@ -15,6 +15,8 @@ interface LessonSlideLayoutProps {
   isFirstSection: boolean;
   isLastSection: boolean;
   canProceed?: boolean;
+  currentSectionId?: string;
+  onMarkSectionComplete?: (sectionId: string) => void;
 }
 
 export function LessonSlideLayout({
@@ -28,10 +30,17 @@ export function LessonSlideLayout({
   isFirstSection,
   isLastSection,
   canProceed = true,
+  currentSectionId,
+  onMarkSectionComplete,
 }: LessonSlideLayoutProps) {
   const progressPercent = ((currentSection + 1) / totalSections) * 100;
 
   const handleNext = () => {
+    // Mark current section as complete before moving to next
+    if (currentSectionId && onMarkSectionComplete) {
+      onMarkSectionComplete(currentSectionId);
+    }
+    
     if (isLastSection && onFinish) {
       onFinish();
     } else {

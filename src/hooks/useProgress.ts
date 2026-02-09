@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { clearAllLessonStorage } from '@/utils/clearLessonStorage';
 
 export interface LessonProgress {
   completed: boolean;
@@ -38,21 +39,9 @@ const DEFAULT_PROGRESS: Progress = {
   totalProgress: 0,
 };
 
-const STORAGE_KEY = 'bioenergy_progress';
-
 export function useProgress() {
-  const [progress, setProgress] = useState<Progress>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : DEFAULT_PROGRESS;
-    } catch {
-      return DEFAULT_PROGRESS;
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  }, [progress]);
+  // NO localStorage - database only!
+  const [progress, setProgress] = useState<Progress>(DEFAULT_PROGRESS);
 
   const updateProgress = useCallback((updates: Partial<Progress>) => {
     setProgress((prev) => {
@@ -147,8 +136,14 @@ export function useProgress() {
 
   const resetProgress = () => {
     setProgress(DEFAULT_PROGRESS);
-    localStorage.removeItem(STORAGE_KEY);
+    // Clear all lesson-related storage (just in case any exists)
+    clearAllLessonStorage();
   };
+
+  // Function to force reload progress from external update (e.g., admin reset)
+  const reloadProgress = useCallback((newProgress: Partial<Progress>) => {
+    updateProgress(newProgress);
+  }, [updateProgress]);
 
   const isTabUnlocked = (tabId: string) => progress.unlockedTabs.includes(tabId);
 
@@ -159,6 +154,7 @@ export function useProgress() {
     completeLesson,
     completePostTest,
     resetProgress,
+    reloadProgress,
     isTabUnlocked,
   };
 }

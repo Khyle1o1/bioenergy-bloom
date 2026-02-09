@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, RotateCcw, Sparkles, GripVertical } from 'lucide-react';
+import { useAnswerLogger } from '@/hooks/useAnswerLogger';
 
 interface MatchItem {
   id: string;
@@ -11,9 +12,12 @@ interface DragDropMatchProps {
   title: string;
   items: MatchItem[];
   onComplete?: () => void;
+  activityName?: string;
+  lessonId?: string;
 }
 
-export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) {
+export function DragDropMatch({ title, items, onComplete, activityName, lessonId }: DragDropMatchProps) {
+  const { logMultipleAnswers } = useAnswerLogger();
   const [terms, setTerms] = useState<MatchItem[]>([]);
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
@@ -77,10 +81,29 @@ export function DragDropMatch({ title, items, onComplete }: DragDropMatchProps) 
     e.preventDefault();
   };
 
-  const checkAnswers = () => {
+  const checkAnswers = async () => {
     // Now show right/wrong feedback for current matches
     setShowFeedback(true);
     const allCorrect = items.every((item) => matches[item.id] === item.id);
+    
+    // Log all matches to database
+    const answerLogs = items.map((item) => {
+      const matchedDefinitionId = matches[item.id];
+      const matchedDefinition = items.find((i) => i.id === matchedDefinitionId);
+      return {
+        activity_type: 'matching' as const,
+        activity_name: activityName || title,
+        lesson_id: lessonId,
+        question_id: `match_${item.id}`,
+        question_text: `Match: ${item.term} → ${item.definition}`,
+        selected_answer: matchedDefinition ? matchedDefinition.term : 'Not matched',
+        correct_answer: item.term,
+        is_correct: matchedDefinitionId === item.id,
+      };
+    });
+
+    await logMultipleAnswers(answerLogs);
+    
     if (allCorrect) {
       setCompleted(true);
       onComplete?.();

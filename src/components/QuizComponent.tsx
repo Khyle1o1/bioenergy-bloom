@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { useAnswerLogger } from '@/hooks/useAnswerLogger';
 
 interface QuizComponentProps {
   title: string;
@@ -21,6 +22,10 @@ interface QuizComponentProps {
   // When true, treats the quiz as diagnostic-only:
   // no pass/fail gating or "need X% to unlock" messaging.
   diagnosticMode?: boolean;
+  // Activity type for logging
+  activityType?: 'lesson1_quiz' | 'lesson2_quiz' | 'lesson3_quiz' | 'posttest';
+  // Lesson ID for logging
+  lessonId?: string;
 }
 
 export function QuizComponent({ 
@@ -31,7 +36,10 @@ export function QuizComponent({
   showResults = false,
   allowRetry = true,
   diagnosticMode = false,
+  activityType = 'lesson1_quiz',
+  lessonId,
 }: QuizComponentProps) {
+  const { logMultipleAnswers } = useAnswerLogger();
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(showResults);
   const [showModal, setShowModal] = useState(false);
@@ -42,7 +50,7 @@ export function QuizComponent({
     setAnswers((prev) => ({ ...prev, [questionId]: optionIndex }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     let correct = 0;
     questions.forEach((q) => {
       if (answers[q.id] === q.correctAnswer) {
@@ -52,6 +60,23 @@ export function QuizComponent({
     setScore(correct);
     setSubmitted(true);
     setShowModal(true);
+
+    // Log all answers to database
+    const answerLogs = questions.map((q) => {
+      const selectedIndex = answers[q.id];
+      return {
+        activity_type: activityType,
+        activity_name: `${title} - Question ${q.id}`,
+        lesson_id: lessonId,
+        question_id: `${activityType}_q${q.id}`,
+        question_text: q.question,
+        selected_answer: selectedIndex !== undefined ? q.options[selectedIndex] : 'Not answered',
+        correct_answer: q.options[q.correctAnswer],
+        is_correct: selectedIndex === q.correctAnswer,
+      };
+    });
+
+    await logMultipleAnswers(answerLogs);
   };
 
   const handleContinue = () => {

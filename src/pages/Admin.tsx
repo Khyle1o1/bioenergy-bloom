@@ -11,10 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Users, TrendingUp, Award, RefreshCw, Settings, LogOut } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { StudentDetailModal } from '@/components/admin/StudentDetailModal';
+import { ResetProgressModal } from '@/components/admin/ResetProgressModal';
 import { toast } from 'sonner';
 
 interface StudentData {
   id: string;
+  user_id: string; // Add user_id for answer logs queries
   full_name: string;
   email: string;
   pre_test_score: number | null;
@@ -37,6 +40,8 @@ export default function Admin() {
   const [students, setStudents] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(null);
+  const [studentForReset, setStudentForReset] = useState<StudentData | null>(null);
 
   const handleSignOut = async () => {
     try {
@@ -80,6 +85,7 @@ export default function Admin() {
         const profile = profilesData?.find(p => p.user_id === progress.user_id);
         return {
           id: progress.id,
+          user_id: progress.user_id, // Include user_id for answer logs
           full_name: profile?.full_name || 'Unknown',
           email: profile?.email || '',
           ...progress
@@ -254,62 +260,100 @@ export default function Admin() {
                           <TableHead className="text-center">Post-Test</TableHead>
                           <TableHead className="text-center">Progress</TableHead>
                           <TableHead>Last Activity</TableHead>
+                          <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {students.map((student) => (
                           <TableRow key={student.id}>
-                            <TableCell>
+                            <TableCell 
+                              className="cursor-pointer hover:bg-muted/30"
+                              onClick={() => setSelectedStudent(student)}
+                            >
                               <div>
                                 <p className="font-medium">{student.full_name}</p>
                                 <p className="text-xs text-muted-foreground">{student.email}</p>
                               </div>
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell 
+                              className="text-center cursor-pointer hover:bg-muted/30"
+                              onClick={() => setSelectedStudent(student)}
+                            >
                               {student.pre_test_completed ? (
                                 <Badge variant="secondary">{student.pre_test_score}/30</Badge>
                               ) : (
                                 <Badge variant="outline">—</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell 
+                              className="text-center cursor-pointer hover:bg-muted/30"
+                              onClick={() => setSelectedStudent(student)}
+                            >
                               {student.lesson1_completed ? (
                                 <Badge className="bg-chlorophyll">{student.lesson1_score}%</Badge>
                               ) : (
                                 <Badge variant="outline">—</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell 
+                              className="text-center cursor-pointer hover:bg-muted/30"
+                              onClick={() => setSelectedStudent(student)}
+                            >
                               {student.lesson2_completed ? (
                                 <Badge className="bg-sunlight text-black">{student.lesson2_score}%</Badge>
                               ) : (
                                 <Badge variant="outline">—</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell 
+                              className="text-center cursor-pointer hover:bg-muted/30"
+                              onClick={() => setSelectedStudent(student)}
+                            >
                               {student.lesson3_completed ? (
                                 <Badge className="bg-glucose">{student.lesson3_score}%</Badge>
                               ) : (
                                 <Badge variant="outline">—</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell 
+                              className="text-center cursor-pointer hover:bg-muted/30"
+                              onClick={() => setSelectedStudent(student)}
+                            >
                               {student.post_test_completed ? (
                                 <Badge className="bg-atp">{student.post_test_score}/30</Badge>
                               ) : (
                                 <Badge variant="outline">—</Badge>
                               )}
                             </TableCell>
-                            <TableCell className="text-center">
+                            <TableCell 
+                              className="text-center cursor-pointer hover:bg-muted/30"
+                              onClick={() => setSelectedStudent(student)}
+                            >
                               <div className="flex items-center gap-2">
                                 <Progress value={student.total_progress} className="w-16 h-2" />
                                 <span className="text-sm font-medium">{student.total_progress}%</span>
                               </div>
                             </TableCell>
-                            <TableCell>
+                            <TableCell 
+                              className="cursor-pointer hover:bg-muted/30"
+                              onClick={() => setSelectedStudent(student)}
+                            >
                               <span className="text-sm text-muted-foreground">
                                 {new Date(student.last_activity).toLocaleDateString()}
                               </span>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setStudentForReset(student);
+                                }}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <RefreshCw className="w-4 h-4" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -326,6 +370,31 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Student Detail Modal */}
+      {selectedStudent && (
+        <StudentDetailModal
+          studentId={selectedStudent.user_id}
+          studentName={selectedStudent.full_name}
+          studentEmail={selectedStudent.email}
+          isOpen={!!selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
+
+      {/* Reset Progress Modal */}
+      {studentForReset && (
+        <ResetProgressModal
+          studentId={studentForReset.user_id}
+          studentName={studentForReset.full_name}
+          isOpen={!!studentForReset}
+          onClose={() => setStudentForReset(null)}
+          onResetComplete={() => {
+            setStudentForReset(null);
+            handleRefresh();
+          }}
+        />
+      )}
     </div>
   );
 }

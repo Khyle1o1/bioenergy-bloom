@@ -32,14 +32,8 @@ const SECTION_TITLES: Record<string, string> = {
 };
 
 export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
-  const [sectionsDone, setSectionsDone] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem(SECTIONS_DONE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  // NO localStorage - always start fresh, database is the only source of truth
+  const [sectionsDone, setSectionsDone] = useState<string[]>([]);
 
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
 
@@ -62,13 +56,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
     sectionIds: LESSON2_SECTION_IDS,
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(SECTIONS_DONE_KEY, JSON.stringify(sectionsDone));
-    } catch {
-      // ignore
-    }
-  }, [sectionsDone]);
+  // REMOVED: No more localStorage - database only
 
   const markDone = (id: string) => {
     if (!sectionsDone.includes(id)) {
@@ -169,9 +157,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               />
             </div>
 
-            <button onClick={() => markDone('start-thinking')} className="btn-nature text-sm py-2">
-              Save and continue
-            </button>
+            {/* Section auto-completes when clicking Next */}
           </div>
         );
 
@@ -269,9 +255,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               </div>
             </div>
 
-            <button onClick={() => markDone('dive-in')} className="btn-nature text-sm py-2">
-              I've completed this section
-            </button>
+            {/* Section auto-completes when clicking Next */}
           </div>
         );
 
@@ -328,9 +312,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               </table>
             </div>
 
-            <button onClick={() => markDone('activity-2-1')} className="btn-nature text-sm py-2">
-              Complete Activity
-            </button>
+            {/* Activity auto-completes when clicking Next */}
           </div>
         );
 
@@ -420,9 +402,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               ))}
             </div>
 
-            <button onClick={() => markDone('activity-2-2')} className="btn-nature text-sm py-2">
-              Complete Investigation
-            </button>
+            {/* Investigation auto-completes when clicking Next */}
           </div>
         );
 
@@ -468,9 +448,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               <img src="/cycle.png" alt="Cycle diagram" className="w-full max-w-lg mx-auto h-auto rounded-md" />
             </div>
 
-            <button onClick={() => markDone('assessment')} className="btn-nature text-sm py-2">
-              Save Assessment
-            </button>
+            {/* Assessment auto-completes when clicking Next */}
           </div>
         );
 
@@ -549,9 +527,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               </div>
             </div>
 
-            <button onClick={() => markDone('lets-go-further')} className="btn-nature text-sm py-2">
-              Save and continue
-            </button>
+            {/* Section auto-completes when clicking Next */}
           </div>
         );
 
@@ -632,16 +608,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <button onClick={() => markDone('feedback-reflection')} className="btn-nature text-sm py-2">
-                Complete Section
-              </button>
-              {allSectionsCompleted && !completed && (
-                <button onClick={() => onComplete(5)} className="btn-nature text-sm py-2">
-                  Mark Lesson 2 as Complete
-                </button>
-              )}
-            </div>
+            {/* Section auto-completes when clicking Next */}
           </div>
         );
 
@@ -684,6 +651,8 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
         isFirstSection={isFirstSection}
         isLastSection={isLastSection}
         canProceed={true}
+        currentSectionId={currentSectionId}
+        onMarkSectionComplete={markDone}
       >
         {renderSectionContent()}
       </LessonSlideLayout>

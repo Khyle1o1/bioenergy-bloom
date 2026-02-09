@@ -123,54 +123,18 @@ const SECTION_TITLES: Record<string, string> = {
 };
 
 export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
-  const [sectionsDone, setSectionsDone] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem(SECTIONS_DONE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  // NO localStorage - always start fresh, database is the only source of truth
+  const [sectionsDone, setSectionsDone] = useState<string[]>([]);
 
-  const [pairData, setPairData] = useState<PairData>(() => {
-    try {
-      const saved = localStorage.getItem(PAIR_DATA_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as PairData;
-        return { ...initialPairData, ...parsed, stage: Math.min(parsed.stage ?? 1, 6) as PairStage };
-      }
-      return initialPairData;
-    } catch {
-      return initialPairData;
-    }
-  });
+  // NO localStorage - always start fresh
+  const [pairData, setPairData] = useState<PairData>(initialPairData);
 
-  const [showWhatData, setShowWhatData] = useState<ShowWhatData>(() => {
-    try {
-      const saved = localStorage.getItem(SHOW_WHAT_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as ShowWhatData;
-        return { ...initialShowWhatData, ...parsed };
-      }
-      return initialShowWhatData;
-    } catch {
-      return initialShowWhatData;
-    }
-  });
+  // NO localStorage - always start fresh
+  const [showWhatData, setShowWhatData] = useState<ShowWhatData>(initialShowWhatData);
   const [showWhatValidationError, setShowWhatValidationError] = useState<string | null>(null);
 
-  const [goFurtherData, setGoFurtherData] = useState<GoFurtherData>(() => {
-    try {
-      const saved = localStorage.getItem(GO_FURTHER_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as GoFurtherData;
-        return { ...initialGoFurtherData, ...parsed };
-      }
-      return initialGoFurtherData;
-    } catch {
-      return initialGoFurtherData;
-    }
-  });
+  // NO localStorage - always start fresh
+  const [goFurtherData, setGoFurtherData] = useState<GoFurtherData>(initialGoFurtherData);
 
   // Navigation hook
   const {
@@ -192,37 +156,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
     sectionIds: LESSON1_SECTION_IDS,
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(SECTIONS_DONE_KEY, JSON.stringify(sectionsDone));
-    } catch {
-      // ignore write errors
-    }
-  }, [sectionsDone]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(PAIR_DATA_KEY, JSON.stringify(pairData));
-    } catch {
-      // ignore
-    }
-  }, [pairData]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(SHOW_WHAT_KEY, JSON.stringify(showWhatData));
-    } catch {
-      // ignore
-    }
-  }, [showWhatData]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(GO_FURTHER_KEY, JSON.stringify(goFurtherData));
-    } catch {
-      // ignore
-    }
-  }, [goFurtherData]);
+  // REMOVED: No more localStorage saving - database only
 
   const updateGoFurther = (updates: Partial<GoFurtherData>) => {
     setGoFurtherData((prev) => ({ ...prev, ...updates }));
@@ -267,13 +201,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
     }
   };
 
-  // Automatically mark the objectives section as done once it has been viewed.
-  // This keeps progress accurate without needing a separate confirmation button.
-  useEffect(() => {
-    if (currentSectionId === 'objectives') {
-      markDone('objectives');
-    }
-  }, [currentSectionId]);
+  // Removed auto-mark on view - sections complete when clicking Next button
 
   const allSectionsCompleted = LESSON1_SECTION_IDS.every((id) =>
     sectionsDone.includes(id)
@@ -363,6 +291,8 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
               title="Match Cell Parts to Functions"
               items={MATCH_ITEMS}
               onComplete={() => markDone('start-thinking')}
+              activityName="Lesson 1 - Match Cell Parts to Functions"
+              lessonId="lesson1"
             />
           </div>
         );
@@ -434,9 +364,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
               </div>
             </div>
 
-            <button onClick={() => markDone('dive-in')} className="btn-nature text-sm py-2">
-              I've completed this section
-            </button>
+            {/* Section auto-completes when clicking Next */}
           </div>
         );
 
@@ -496,9 +424,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
               </div>
             </div>
 
-            <button onClick={() => markDone('key-concepts')} className="btn-nature text-sm py-2">
-              I've completed this section
-            </button>
+            {/* Section auto-completes when clicking Next */}
           </div>
         );
 
@@ -686,9 +612,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
                     onChange={(e) => updatePair({ finalAnswer: e.target.value })}
                   />
                 </div>
-                <button onClick={() => markDone('pair')} className="btn-nature text-sm py-2">
-                  Complete PAIR Activity
-                </button>
+                {/* PAIR activity auto-completes when clicking Next */}
               </div>
             )}
           </div>
@@ -831,19 +755,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
               />
             </div>
 
-            <div className="flex gap-3">
-              <button onClick={() => markDone('go-further')} className="btn-nature text-sm py-2">
-                Complete Section
-              </button>
-              {allSectionsCompleted && !completed && (
-                <button
-                  onClick={() => onComplete(5)}
-                  className="btn-nature text-sm py-2"
-                >
-                  Proceed to next lesson
-                </button>
-              )}
-            </div>
+            {/* Section auto-completes when clicking Next */}
           </div>
         );
 
@@ -863,6 +775,8 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
       isFirstSection={isFirstSection}
       isLastSection={isLastSection}
       canProceed={true}
+      currentSectionId={currentSectionId}
+      onMarkSectionComplete={markDone}
     >
       {renderSectionContent()}
     </LessonSlideLayout>

@@ -106,10 +106,54 @@ export function useProgressSync(
 
     const timeoutId = setTimeout(() => {
       syncToDatabase();
-    }, 1000);
+    }, 500); // Reduced from 1000ms to 500ms for faster sync
 
     return () => clearTimeout(timeoutId);
   }, [user, progress, syncToDatabase]);
+
+  // Setup realtime subscription to listen for progress resets from admin
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('student_progress_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'student_progress',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Clear lesson-related localStorage when progress is reset
+          try {
+            const keysToRemove: string[] = [];
+            for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && (
+                key.startsWith('lesson') || 
+                key.includes('sections_done') ||
+                key.includes('current_section')
+              )) {
+                keysToRemove.push(key);
+              }
+            }
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+          } catch (error) {
+            console.error('Error clearing lesson localStorage:', error);
+          }
+          
+          // Reload progress when admin makes changes
+          loadFromDatabase();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, loadFromDatabase]);
 
   return { syncToDatabase, loadFromDatabase };
 }

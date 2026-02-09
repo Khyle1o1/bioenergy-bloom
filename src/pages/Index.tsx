@@ -89,9 +89,8 @@ const Index = () => {
 
   const handlePreTestComplete = (score: number) => {
     completePreTest(score);
-    // After completing the diagnostic pre-test once, move the learner
-    // forward to Lesson 1 regardless of score.
-    setTimeout(() => setActiveTab('lesson1'), 1500);
+    // Stay on pre-test results page - let student choose when to start Lesson 1
+    // Don't auto-redirect anymore
   };
 
   const handleLesson1Complete = (score: number) => {
