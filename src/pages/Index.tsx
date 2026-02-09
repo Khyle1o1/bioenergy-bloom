@@ -129,6 +129,7 @@ const Index = () => {
             completed={progress.preTestCompleted}
             score={progress.preTestScore}
             onStartLesson1={() => setActiveTab('lesson1')}
+            onBackToResults={() => setActiveTab('welcome')}
           />
         );
       case 'lesson1':

@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { preTestQuestions } from '@/data/quizQuestions';
-import { FileQuestion, AlertCircle, ArrowLeft, ChevronRight, Trophy } from 'lucide-react';
+import {
+  FileQuestion,
+  AlertCircle,
+  ArrowLeft,
+  ChevronRight,
+  Trophy,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
 
 interface PreTestProps {
   onComplete: (score: number) => void;
@@ -8,6 +16,9 @@ interface PreTestProps {
   score: number | null;
   // Called when the learner chooses to move into Lesson 1
   onStartLesson1?: () => void;
+  // Optional callback when the learner exits the review and wants to
+  // return to the overall results/overview page.
+  onBackToResults?: () => void;
   // Notifies the parent layout when the pre-test enters or exits
   // immersive full-screen mode so headers / tabs can be hidden.
   onFullscreenChange?: (isFullscreen: boolean) => void;
@@ -18,15 +29,42 @@ export function PreTest({
   completed,
   score,
   onStartLesson1,
+  onBackToResults,
   onFullscreenChange,
 }: PreTestProps) {
-  const [phase, setPhase] = useState<'intro' | 'question' | 'results'>(
-    completed && score !== null ? 'results' : 'intro'
-  );
+  const [phase, setPhase] = useState<'intro' | 'question' | 'results' | 'review'>(() => {
+    // If the learner has already completed the pre-test (e.g., returning from
+    // the dashboard to review), start directly on the read-only review page
+    // instead of the full-screen "Pre-Test Complete" card.
+    if (completed && score !== null) {
+      return 'review';
+    }
+    return 'intro';
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<number[]>(
-    () => Array(preTestQuestions.length).fill(-1)
-  );
+  const [answers, setAnswers] = useState<number[]>(() => {
+    // Restore saved answers when the pre-test has already been completed so
+    // the learner can review their exact choices, even after navigation.
+    if (typeof window === 'undefined') {
+      return Array(preTestQuestions.length).fill(-1);
+    }
+
+    try {
+      const stored = window.localStorage.getItem('bioenergy_pretest_answers');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length === preTestQuestions.length) {
+          return parsed.map((value) =>
+            typeof value === 'number' ? value : -1
+          );
+        }
+      }
+    } catch {
+      // Ignore storage read errors and fall back to empty answers
+    }
+
+    return Array(preTestQuestions.length).fill(-1);
+  });
   const [finalScore, setFinalScore] = useState<number | null>(score);
 
   const totalQuestions = preTestQuestions.length;
@@ -53,6 +91,20 @@ export function PreTest({
     setAnswers((prev) => {
       const next = [...prev];
       next[currentIndex] = optionIndex;
+
+       // Persist answers so the review screen can be reconstructed later and
+       // the learner cannot retake the diagnostic with fresh choices.
+       try {
+         if (typeof window !== 'undefined') {
+           window.localStorage.setItem(
+             'bioenergy_pretest_answers',
+             JSON.stringify(next)
+           );
+         }
+       } catch {
+         // Ignore storage write errors
+       }
+
       return next;
     });
   };
@@ -80,6 +132,19 @@ export function PreTest({
       }
     });
     setFinalScore(correct);
+
+    // Ensure final answers are saved when the learner submits the pre-test.
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(
+          'bioenergy_pretest_answers',
+          JSON.stringify(answers)
+        );
+      }
+    } catch {
+      // Ignore storage write errors
+    }
+
     onComplete(correct);
     setPhase('results');
   };
@@ -179,12 +244,167 @@ export function PreTest({
               <button
                 type="button"
                 onClick={() => {
-                  setPhase('question');
-                  setCurrentIndex(0);
+                  // Move into a dedicated, read-only review page rather than
+                  // re-entering the interactive question flow.
+                  setPhase('review');
                 }}
                 className="flex-1 px-4 py-3 rounded-xl border border-primary/20 text-primary font-semibold flex items-center justify-center gap-2 hover:bg-primary/5 bg-white transition-colors"
               >
                 Review Answers
+              </button>
+              <button
+                type="button"
+                onClick={() => onStartLesson1?.()}
+                className="flex-1 btn-nature px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
+              >
+                Start Lesson 1
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'review' && finalScore !== null) {
+    return (
+      <div className="min-h-screen w-full flex items-start justify-center bg-[hsl(var(--background))] animate-fade-in px-4 pt-3 pb-6 sm:pt-4 sm:pb-10">
+        <div className="w-full max-w-5xl">
+          <div className="mb-6 rounded-3xl bg-white shadow-[0_18px_45px_rgba(15,60,30,0.18)] border border-emerald-100/80 px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-primary/8 flex items-center justify-center border border-primary/15">
+                <Trophy className="w-8 h-8 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold">
+                  Pre-Test Review
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Your answers are locked. Use this review to learn from any
+                  mistakes.
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                Final Score
+              </p>
+              <p className="text-2xl font-extrabold text-primary">
+                {finalScore}/{totalQuestions}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {percentage}% diagnostic result
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-3xl bg-white shadow-[0_18px_45px_rgba(15,60,30,0.14)] border border-emerald-100/80 px-4 py-5 sm:px-6 sm:py-6">
+            <div className="max-h-[60vh] overflow-y-auto pr-1 space-y-4">
+              {preTestQuestions.map((question, index) => {
+                const selectedIndex = answers[index];
+                const isCorrect =
+                  selectedIndex !== -1 &&
+                  selectedIndex === question.correctAnswer;
+
+                return (
+                  <div
+                    key={question.id}
+                    className="quiz-card slide-up"
+                    style={{ animationDelay: `${index * 35}ms` }}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div>
+                        <p className="text-[11px] sm:text-xs uppercase tracking-[0.18em] text-primary/80 font-semibold mb-1">
+                          Question {question.id}
+                        </p>
+                        <h3 className="font-semibold text-sm sm:text-base leading-relaxed text-foreground">
+                          {question.question}
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {isCorrect ? (
+                          <>
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <span className="text-xs font-semibold text-green-700">
+                              Correct
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-5 h-5 text-red-500" />
+                            <span className="text-xs font-semibold text-red-600">
+                              {selectedIndex === -1 ? 'Not Answered' : 'Incorrect'}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {question.options.map((option, optIndex) => {
+                        const optionIsCorrect =
+                          question.correctAnswer === optIndex;
+                        const isSelected = selectedIndex === optIndex;
+
+                        let className = 'quiz-option cursor-default';
+                        if (optionIsCorrect) className += ' correct';
+                        if (isSelected && !optionIsCorrect) {
+                          className += ' incorrect';
+                        }
+
+                        return (
+                          <button
+                            key={optIndex}
+                            type="button"
+                            disabled
+                            className={className}
+                            aria-pressed={isSelected}
+                          >
+                            <span className="w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                              {String.fromCharCode(65 + optIndex)}
+                            </span>
+                            <span className="text-sm text-left flex-1">
+                              {option}
+                            </span>
+                            {optionIsCorrect && (
+                              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                            )}
+                            {isSelected && !optionIsCorrect && (
+                              <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {!isCorrect && (
+                      <p className="mt-3 text-xs sm:text-sm text-emerald-900 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+                        <span className="font-semibold">Correct answer:</span>{' '}
+                        {question.options[question.correctAnswer]}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  // Prefer navigating back to the main overview / dashboard
+                  // if a handler is provided; otherwise, fall back to the
+                  // in-component results view.
+                  if (onBackToResults) {
+                    onBackToResults();
+                  } else {
+                    setPhase('results');
+                  }
+                }}
+                className="flex-1 px-4 py-3 rounded-xl border border-primary/20 text-primary font-semibold flex items-center justify-center gap-2 hover:bg-primary/5 bg-white transition-colors"
+              >
+                Back to Results
               </button>
               <button
                 type="button"
