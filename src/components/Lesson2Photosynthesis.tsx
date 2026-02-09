@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Target, MessageSquare, X, Sun, Leaf, FlaskConical, ClipboardCheck, Lightbulb, FileText } from 'lucide-react';
 import { LessonSlideLayout, LessonIntro, useLessonNavigation } from './lesson';
+import { useProgress } from '@/hooks/useProgress';
+import { useProgressSync } from '@/hooks/useProgressSync';
 
 interface Lesson2Props {
   onComplete: (score: number) => void;
   completed: boolean;
+  onBackToHome?: () => void;
 }
 
 const CHLOROPLAST_VIDEO_SRC = '/Chloroplast_GIF_Animation_Request.mp4';
@@ -31,11 +34,53 @@ const SECTION_TITLES: Record<string, string> = {
   'feedback-reflection': 'Feedback & Reflection',
 };
 
-export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
-  // NO localStorage - always start fresh, database is the only source of truth
-  const [sectionsDone, setSectionsDone] = useState<string[]>([]);
+export function Lesson2Photosynthesis({ onComplete, completed, onBackToHome }: Lesson2Props) {
+  // Get progress to resume from last section
+  const { progress, updateProgress } = useProgress();
+  const { forceSyncNow } = useProgressSync(progress, updateProgress);
+  
+  // Initialize from database, not localStorage
+  // If sectionsDone is empty but currentSection > 0, reconstruct the completed sections
+  const getInitialSectionsDone = () => {
+    const savedSections = progress.lessons.lesson2.sectionsDone || [];
+    const currentSection = progress.lessons.lesson2.currentSection || 0;
+    
+    // If we have saved sections, use them
+    if (savedSections.length > 0) {
+      return savedSections;
+    }
+    
+    // If currentSection > 0 but no saved sections, reconstruct from currentSection
+    // This handles the case where user had progress before the sectionsDone feature
+    if (currentSection > 0) {
+      const reconstructed: string[] = [];
+      for (let i = 0; i < currentSection; i++) {
+        if (LESSON2_SECTION_IDS[i]) {
+          reconstructed.push(LESSON2_SECTION_IDS[i]);
+        }
+      }
+      return reconstructed;
+    }
+    
+    return [];
+  };
+  
+  const [sectionsDone, setSectionsDone] = useState<string[]>(getInitialSectionsDone());
 
   const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+
+  // Callback to save current section when navigating
+  const handleSectionChange = (sectionIndex: number) => {
+    updateProgress({
+      lessons: {
+        ...progress.lessons,
+        lesson2: {
+          ...progress.lessons.lesson2,
+          currentSection: sectionIndex
+        }
+      }
+    });
+  };
 
   const {
     isLessonStarted,
@@ -54,13 +99,29 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
     totalSections: LESSON2_SECTION_IDS.length,
     sectionsDone,
     sectionIds: LESSON2_SECTION_IDS,
+    initialSection: progress.lessons.lesson2.currentSection,
+    onSectionChange: handleSectionChange,
+    // Pass current section so hasLessonEverStarted can check it too
+    savedCurrentSection: progress.lessons.lesson2.currentSection,
   });
 
   // REMOVED: No more localStorage - database only
 
   const markDone = (id: string) => {
     if (!sectionsDone.includes(id)) {
-      setSectionsDone([...sectionsDone, id]);
+      const newSectionsDone = [...sectionsDone, id];
+      setSectionsDone(newSectionsDone);
+      
+      // Save to database
+      updateProgress({
+        lessons: {
+          ...progress.lessons,
+          lesson2: {
+            ...progress.lessons.lesson2,
+            sectionsDone: newSectionsDone
+          }
+        }
+      });
     }
   };
 
@@ -75,6 +136,42 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
     exitLesson();
   };
 
+  const handleExitToHome = async () => {
+    console.log('[Lesson2] Exiting - forcing immediate sync...');
+    await forceSyncNow();
+    console.log('[Lesson2] Sync complete, exiting lesson');
+    exitLesson();
+    onBackToHome?.();
+  };
+
+  // Save reconstructed sections to database on mount if they were reconstructed
+  useEffect(() => {
+    const savedSections = progress.lessons.lesson2.sectionsDone || [];
+    const currentSection = progress.lessons.lesson2.currentSection || 0;
+    
+    // If we reconstructed sections (currentSection > 0 but no saved sections)
+    if (currentSection > 0 && savedSections.length === 0 && sectionsDone.length > 0) {
+      updateProgress({
+        lessons: {
+          ...progress.lessons,
+          lesson2: {
+            ...progress.lessons.lesson2,
+            sectionsDone: sectionsDone
+          }
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount to save reconstructed progress
+
+  // Sync sectionsDone from database when progress updates (e.g., after login or admin reset)
+  useEffect(() => {
+    const dbSections = progress.lessons.lesson2.sectionsDone || [];
+    if (dbSections.length > 0) {
+      setSectionsDone(dbSections);
+    }
+  }, [progress.lessons.lesson2.sectionsDone]);
+
   // Show intro screen if lesson not started
   if (!isLessonStarted) {
     return (
@@ -88,6 +185,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
         onStartLesson={startLesson}
         isLessonCompleted={completed}
         hasLessonEverStarted={hasLessonEverStarted}
+        onBack={onBackToHome}
       />
     );
   }
@@ -645,9 +743,11 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
         currentSection={currentSectionIndex}
         totalSections={LESSON2_SECTION_IDS.length}
         sectionTitle={SECTION_TITLES[currentSectionId] || ''}
+        lessonLabel="Lesson 2: Photosynthesis"
         onNext={goToNext}
         onBack={goToPrevious}
         onFinish={handleFinishLesson}
+        onExit={handleExitToHome}
         isFirstSection={isFirstSection}
         isLastSection={isLastSection}
         canProceed={true}

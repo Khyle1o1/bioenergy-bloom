@@ -5,6 +5,8 @@ export interface LessonProgress {
   completed: boolean;
   score: number;
   assessmentCompleted: boolean;
+  currentSection: number; // 0-based index of current section for resume
+  sectionsDone: string[]; // Array of completed section IDs
 }
 
 export interface Progress {
@@ -29,9 +31,9 @@ const DEFAULT_PROGRESS: Progress = {
   postTestScore: null,
   postTestCompleted: false,
   lessons: {
-    lesson1: { completed: false, score: 0, assessmentCompleted: false },
-    lesson2: { completed: false, score: 0, assessmentCompleted: false },
-    lesson3: { completed: false, score: 0, assessmentCompleted: false },
+    lesson1: { completed: false, score: 0, assessmentCompleted: false, currentSection: 0, sectionsDone: [] },
+    lesson2: { completed: false, score: 0, assessmentCompleted: false, currentSection: 0, sectionsDone: [] },
+    lesson3: { completed: false, score: 0, assessmentCompleted: false, currentSection: 0, sectionsDone: [] },
   },
   // Initially, only Home and Pre-Test are available.
   // Lessons unlock progressively after passing requirements.

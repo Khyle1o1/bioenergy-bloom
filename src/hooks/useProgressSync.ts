@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useAuth } from '@/contexts/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Progress } from './useProgress';
@@ -8,13 +8,23 @@ export function useProgressSync(
   updateLocalProgress: (updates: Partial<Progress>) => void
 ) {
   const { user } = useAuth();
+  
+  // Track if we have unsaved changes
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Sync local progress to database
   const syncToDatabase = useCallback(async () => {
     if (!user) return;
 
     try {
-      await supabase
+      console.log('[ProgressSync] Saving to database:', {
+        lesson1_current_section: progress.lessons.lesson1.currentSection,
+        lesson1_sections_done: progress.lessons.lesson1.sectionsDone,
+        lesson2_current_section: progress.lessons.lesson2.currentSection,
+        lesson2_sections_done: progress.lessons.lesson2.sectionsDone,
+      });
+      
+      const { error } = await supabase
         .from('student_progress')
         .update({
           pre_test_score: progress.preTestScore,
@@ -24,19 +34,30 @@ export function useProgressSync(
           lesson1_completed: progress.lessons.lesson1.completed,
           lesson1_score: progress.lessons.lesson1.score,
           lesson1_assessment_completed: progress.lessons.lesson1.assessmentCompleted,
+          lesson1_current_section: progress.lessons.lesson1.currentSection,
+          lesson1_sections_done: progress.lessons.lesson1.sectionsDone,
           lesson2_completed: progress.lessons.lesson2.completed,
           lesson2_score: progress.lessons.lesson2.score,
           lesson2_assessment_completed: progress.lessons.lesson2.assessmentCompleted,
+          lesson2_current_section: progress.lessons.lesson2.currentSection,
+          lesson2_sections_done: progress.lessons.lesson2.sectionsDone,
           lesson3_completed: progress.lessons.lesson3.completed,
           lesson3_score: progress.lessons.lesson3.score,
           lesson3_assessment_completed: progress.lessons.lesson3.assessmentCompleted,
+          lesson3_current_section: progress.lessons.lesson3.currentSection,
+          lesson3_sections_done: progress.lessons.lesson3.sectionsDone,
           total_progress: progress.totalProgress,
           last_activity: new Date().toISOString()
         })
         .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      console.log('[ProgressSync] ✅ Saved successfully');
+      setHasUnsavedChanges(false);
     } catch (error) {
       const err = error as { message?: string; code?: string };
-      console.error('[ProgressSync] Error syncing progress:', err?.message ?? err, err);
+      console.error('[ProgressSync] ❌ Error syncing progress:', err?.message ?? err, err);
     }
   }, [user, progress]);
 
@@ -61,6 +82,13 @@ export function useProgressSync(
           .eq('user_id', user.id)
           .maybeSingle();
 
+        console.log('[ProgressSync] Loading progress from database:', {
+          lesson1_current_section: data.lesson1_current_section,
+          lesson1_sections_done: data.lesson1_sections_done,
+          lesson2_current_section: data.lesson2_current_section,
+          lesson2_sections_done: data.lesson2_sections_done,
+        });
+
         updateLocalProgress({
           studentName: profile?.full_name || 'user',
           preTestScore: data.pre_test_score,
@@ -71,17 +99,23 @@ export function useProgressSync(
             lesson1: {
               completed: data.lesson1_completed,
               score: data.lesson1_score,
-              assessmentCompleted: data.lesson1_assessment_completed
+              assessmentCompleted: data.lesson1_assessment_completed,
+              currentSection: data.lesson1_current_section ?? 0,
+              sectionsDone: data.lesson1_sections_done ?? []
             },
             lesson2: {
               completed: data.lesson2_completed,
               score: data.lesson2_score,
-              assessmentCompleted: data.lesson2_assessment_completed
+              assessmentCompleted: data.lesson2_assessment_completed,
+              currentSection: data.lesson2_current_section ?? 0,
+              sectionsDone: data.lesson2_sections_done ?? []
             },
             lesson3: {
               completed: data.lesson3_completed,
               score: data.lesson3_score,
-              assessmentCompleted: data.lesson3_assessment_completed
+              assessmentCompleted: data.lesson3_assessment_completed,
+              currentSection: data.lesson3_current_section ?? 0,
+              sectionsDone: data.lesson3_sections_done ?? []
             }
           },
           totalProgress: data.total_progress
@@ -100,16 +134,33 @@ export function useProgressSync(
     }
   }, [user, loadFromDatabase]);
 
+  // Mark that we have unsaved changes whenever progress changes
+  useEffect(() => {
+    setHasUnsavedChanges(true);
+  }, [progress]);
+
   // Sync to database when progress changes (debounced)
   useEffect(() => {
-    if (!user) return;
+    if (!user || !hasUnsavedChanges) return;
 
     const timeoutId = setTimeout(() => {
       syncToDatabase();
-    }, 500); // Reduced from 1000ms to 500ms for faster sync
+    }, 100); // Very short debounce for faster sync
 
     return () => clearTimeout(timeoutId);
-  }, [user, progress, syncToDatabase]);
+  }, [user, hasUnsavedChanges, syncToDatabase]);
+  
+  // Flush unsaved changes when user navigates away or closes tab
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (hasUnsavedChanges) {
+        syncToDatabase();
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges, syncToDatabase]);
 
   // Setup realtime subscription to listen for progress resets from admin
   useEffect(() => {
@@ -155,5 +206,12 @@ export function useProgressSync(
     };
   }, [user, loadFromDatabase]);
 
-  return { syncToDatabase, loadFromDatabase };
+  // Expose function to force immediate sync (for when user exits lesson)
+  const forceSyncNow = useCallback(async () => {
+    if (hasUnsavedChanges) {
+      await syncToDatabase();
+    }
+  }, [hasUnsavedChanges, syncToDatabase]);
+
+  return { syncToDatabase, loadFromDatabase, forceSyncNow };
 }

@@ -5,7 +5,9 @@ interface UseLessonNavigationOptions {
   totalSections: number;
   sectionsDone: string[];
   sectionIds: readonly string[];
+  initialSection?: number; // Resume from this section if provided
   onSectionChange?: (sectionIndex: number) => void;
+  savedCurrentSection?: number; // For checking if lesson has ever been started
 }
 
 export function useLessonNavigation({
@@ -13,11 +15,13 @@ export function useLessonNavigation({
   totalSections,
   sectionsDone,
   sectionIds,
+  initialSection = 0,
   onSectionChange,
+  savedCurrentSection = 0,
 }: UseLessonNavigationOptions) {
   // NO localStorage - everything in memory only
   const [isLessonStarted, setIsLessonStarted] = useState(false);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(initialSection);
 
   // Keyboard navigation
   useEffect(() => {
@@ -38,14 +42,20 @@ export function useLessonNavigation({
   }, [isLessonStarted, currentSectionIndex, totalSections]);
 
   const startLesson = useCallback(() => {
-    // Always start from beginning or first incomplete section
-    const firstIncompleteIndex = sectionIds.findIndex(id => !sectionsDone.includes(id));
-    const startIndex = firstIncompleteIndex >= 0 ? firstIncompleteIndex : 0;
+    // If there's a saved current section (initialSection), use that
+    // Otherwise, find first incomplete section or start from beginning
+    let startIndex = initialSection;
+    
+    // But if the saved section is already done, find the next incomplete one
+    if (startIndex > 0 && sectionIds[startIndex] && sectionsDone.includes(sectionIds[startIndex])) {
+      const firstIncompleteIndex = sectionIds.findIndex(id => !sectionsDone.includes(id));
+      startIndex = firstIncompleteIndex >= 0 ? firstIncompleteIndex : 0;
+    }
     
     setCurrentSectionIndex(startIndex);
     setIsLessonStarted(true);
     onSectionChange?.(startIndex);
-  }, [sectionsDone, sectionIds, onSectionChange]);
+  }, [initialSection, sectionsDone, sectionIds, onSectionChange]);
 
   const exitLesson = useCallback(() => {
     setIsLessonStarted(false);
@@ -76,11 +86,18 @@ export function useLessonNavigation({
 
   const currentSectionId = sectionIds[currentSectionIndex];
   const isCurrentSectionDone = sectionsDone.includes(currentSectionId);
-  const completedSectionsCount = sectionsDone.length;
   
-  // Check if the lesson has ever been started by checking if any sections are completed
-  // This is more reliable than localStorage which can have stale data
-  const hasLessonEverStarted = sectionsDone.length > 0;
+  // Calculate completed sections count intelligently:
+  // If sectionsDone is empty but savedCurrentSection > 0, estimate based on current section
+  const completedSectionsCount = sectionsDone.length > 0 
+    ? sectionsDone.length 
+    : savedCurrentSection > 0 
+      ? savedCurrentSection 
+      : 0;
+  
+  // Check if the lesson has ever been started by checking sections completed OR current section
+  // This handles cases where migration wasn't applied yet (no sectionsDone but has currentSection)
+  const hasLessonEverStarted = sectionsDone.length > 0 || savedCurrentSection > 0;
 
   return {
     isLessonStarted,

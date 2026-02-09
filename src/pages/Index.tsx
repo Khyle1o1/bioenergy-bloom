@@ -30,7 +30,7 @@ const Index = () => {
   } = useProgress();
   
   // Sync progress with database when logged in
-  useProgressSync(progress, updateProgress);
+  const { forceSyncNow } = useProgressSync(progress, updateProgress);
   
   const [activeTab, setActiveTab] = useState(() => {
     try {
@@ -136,6 +136,7 @@ const Index = () => {
           <Lesson1Bioenergetics
             onComplete={handleLesson1Complete}
             completed={progress.lessons.lesson1.completed}
+            onBackToHome={() => setActiveTab('welcome')}
           />
         );
       case 'lesson2':
@@ -143,6 +144,7 @@ const Index = () => {
           <Lesson2Photosynthesis
             onComplete={handleLesson2Complete}
             completed={progress.lessons.lesson2.completed}
+            onBackToHome={() => setActiveTab('welcome')}
           />
         );
       case 'lesson3':

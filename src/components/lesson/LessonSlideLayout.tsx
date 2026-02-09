@@ -9,9 +9,11 @@ interface LessonSlideLayoutProps {
   currentSection: number;
   totalSections: number;
   sectionTitle: string;
+  lessonLabel?: string;
   onNext: () => void;
   onBack: () => void;
   onFinish?: () => void;
+  onExit?: () => void;
   isFirstSection: boolean;
   isLastSection: boolean;
   canProceed?: boolean;
@@ -24,9 +26,11 @@ export function LessonSlideLayout({
   currentSection,
   totalSections,
   sectionTitle,
+  lessonLabel,
   onNext,
   onBack,
   onFinish,
+  onExit,
   isFirstSection,
   isLastSection,
   canProceed = true,
@@ -53,13 +57,32 @@ export function LessonSlideLayout({
       {/* Header with progress */}
       <header className="flex-shrink-0 border-b border-border/50 bg-background/95 backdrop-blur-sm">
         <div className="container max-w-4xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-muted-foreground">
-              Section {currentSection + 1} of {totalSections}
-            </span>
-            <span className="text-xs font-medium text-primary">
-              {Math.round(progressPercent)}% Complete
-            </span>
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <div className="flex flex-col">
+              {lessonLabel && (
+                <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  {lessonLabel}
+                </span>
+              )}
+              <span className="text-xs font-medium text-muted-foreground">
+                Section {currentSection + 1} of {totalSections}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-primary">
+                {Math.round(progressPercent)}% Complete
+              </span>
+              {onExit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onExit}
+                  className="h-7 px-2 text-xs"
+                >
+                  Home
+                </Button>
+              )}
+            </div>
           </div>
           <Progress value={progressPercent} className="h-1.5" />
           <h2 className="mt-3 text-lg font-semibold text-foreground">{sectionTitle}</h2>

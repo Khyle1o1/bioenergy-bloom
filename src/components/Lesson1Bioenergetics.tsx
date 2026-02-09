@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react';
 import { Lightbulb, Target, BookOpen, Award, MessageSquare, ClipboardList, ArrowRightCircle, Zap } from 'lucide-react';
 import { DragDropMatch } from './DragDropMatch';
 import { LessonSlideLayout, LessonIntro, useLessonNavigation } from './lesson';
+import { useProgress } from '@/hooks/useProgress';
+import { useProgressSync } from '@/hooks/useProgressSync';
 
 interface Lesson1Props {
   onComplete: (score: number) => void;
   completed: boolean;
+  onBackToHome?: () => void;
 }
 
 const MATCH_ITEMS = [
@@ -122,9 +125,47 @@ const SECTION_TITLES: Record<string, string> = {
   'go-further': "Let's Go Further!",
 };
 
-export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
-  // NO localStorage - always start fresh, database is the only source of truth
-  const [sectionsDone, setSectionsDone] = useState<string[]>([]);
+export function Lesson1Bioenergetics({ onComplete, completed, onBackToHome }: Lesson1Props) {
+  // Get progress to resume from last section
+  const { progress, updateProgress } = useProgress();
+  const { forceSyncNow } = useProgressSync(progress, updateProgress);
+  
+  // Debug: log progress on mount
+  useEffect(() => {
+    console.log('[Lesson1] Progress loaded:', {
+      currentSection: progress.lessons.lesson1.currentSection,
+      sectionsDone: progress.lessons.lesson1.sectionsDone,
+      completed: progress.lessons.lesson1.completed
+    });
+  }, []);
+  
+  // Initialize from database, not localStorage
+  // If sectionsDone is empty but currentSection > 0, reconstruct the completed sections
+  const getInitialSectionsDone = () => {
+    const savedSections = progress.lessons.lesson1.sectionsDone || [];
+    const currentSection = progress.lessons.lesson1.currentSection || 0;
+    
+    // If we have saved sections, use them
+    if (savedSections.length > 0) {
+      return savedSections;
+    }
+    
+    // If currentSection > 0 but no saved sections, reconstruct from currentSection
+    // This handles the case where user had progress before the sectionsDone feature
+    if (currentSection > 0) {
+      const reconstructed: string[] = [];
+      for (let i = 0; i < currentSection; i++) {
+        if (LESSON1_SECTION_IDS[i]) {
+          reconstructed.push(LESSON1_SECTION_IDS[i]);
+        }
+      }
+      return reconstructed;
+    }
+    
+    return [];
+  };
+  
+  const [sectionsDone, setSectionsDone] = useState<string[]>(getInitialSectionsDone());
 
   // NO localStorage - always start fresh
   const [pairData, setPairData] = useState<PairData>(initialPairData);
@@ -135,6 +176,19 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
 
   // NO localStorage - always start fresh
   const [goFurtherData, setGoFurtherData] = useState<GoFurtherData>(initialGoFurtherData);
+
+  // Callback to save current section when navigating
+  const handleSectionChange = (sectionIndex: number) => {
+    updateProgress({
+      lessons: {
+        ...progress.lessons,
+        lesson1: {
+          ...progress.lessons.lesson1,
+          currentSection: sectionIndex
+        }
+      }
+    });
+  };
 
   // Navigation hook
   const {
@@ -154,7 +208,47 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
     totalSections: LESSON1_SECTION_IDS.length,
     sectionsDone,
     sectionIds: LESSON1_SECTION_IDS,
+    initialSection: progress.lessons.lesson1.currentSection,
+    onSectionChange: handleSectionChange,
+    // Pass current section so hasLessonEverStarted can check it too
+    savedCurrentSection: progress.lessons.lesson1.currentSection,
   });
+
+  const handleExitToHome = async () => {
+    console.log('[Lesson1] Exiting - forcing immediate sync...');
+    await forceSyncNow();
+    console.log('[Lesson1] Sync complete, exiting lesson');
+    exitLesson();
+    onBackToHome?.();
+  };
+
+  // Save reconstructed sections to database on mount if they were reconstructed
+  useEffect(() => {
+    const savedSections = progress.lessons.lesson1.sectionsDone || [];
+    const currentSection = progress.lessons.lesson1.currentSection || 0;
+    
+    // If we reconstructed sections (currentSection > 0 but no saved sections)
+    if (currentSection > 0 && savedSections.length === 0 && sectionsDone.length > 0) {
+      updateProgress({
+        lessons: {
+          ...progress.lessons,
+          lesson1: {
+            ...progress.lessons.lesson1,
+            sectionsDone: sectionsDone
+          }
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount to save reconstructed progress
+
+  // Sync sectionsDone from database when progress updates (e.g., after login or admin reset)
+  useEffect(() => {
+    const dbSections = progress.lessons.lesson1.sectionsDone || [];
+    if (dbSections.length > 0) {
+      setSectionsDone(dbSections);
+    }
+  }, [progress.lessons.lesson1.sectionsDone]);
 
   // REMOVED: No more localStorage saving - database only
 
@@ -197,7 +291,19 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
 
   const markDone = (id: string) => {
     if (!sectionsDone.includes(id)) {
-      setSectionsDone([...sectionsDone, id]);
+      const newSectionsDone = [...sectionsDone, id];
+      setSectionsDone(newSectionsDone);
+      
+      // Save to database
+      updateProgress({
+        lessons: {
+          ...progress.lessons,
+          lesson1: {
+            ...progress.lessons.lesson1,
+            sectionsDone: newSectionsDone
+          }
+        }
+      });
     }
   };
 
@@ -227,6 +333,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
         onStartLesson={startLesson}
         isLessonCompleted={completed}
         hasLessonEverStarted={hasLessonEverStarted}
+        onBack={onBackToHome}
       />
     );
   }
@@ -769,9 +876,11 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
       currentSection={currentSectionIndex}
       totalSections={LESSON1_SECTION_IDS.length}
       sectionTitle={SECTION_TITLES[currentSectionId] || ''}
+      lessonLabel="Lesson 1: Bioenergetics"
       onNext={goToNext}
       onBack={goToPrevious}
       onFinish={handleFinishLesson}
+      onExit={handleExitToHome}
       isFirstSection={isFirstSection}
       isLastSection={isLastSection}
       canProceed={true}

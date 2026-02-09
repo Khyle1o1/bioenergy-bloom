@@ -20,12 +20,18 @@ BEGIN
     lesson1_completed = false,
     lesson1_score = 0,
     lesson1_assessment_completed = false,
+    lesson1_current_section = 0,
+    lesson1_sections_done = '{}',
     lesson2_completed = false,
     lesson2_score = 0,
     lesson2_assessment_completed = false,
+    lesson2_current_section = 0,
+    lesson2_sections_done = '{}',
     lesson3_completed = false,
     lesson3_score = 0,
     lesson3_assessment_completed = false,
+    lesson3_current_section = 0,
+    lesson3_sections_done = '{}',
     total_progress = 0,
     last_activity = now(),
     updated_at = now()
@@ -106,6 +112,8 @@ BEGIN
       lesson1_completed = false,
       lesson1_score = 0,
       lesson1_assessment_completed = false,
+      lesson1_current_section = 0,
+      lesson1_sections_done = '{}',
       last_activity = now(),
       updated_at = now()
     WHERE user_id = target_user_id
@@ -116,6 +124,8 @@ BEGIN
       lesson2_completed = false,
       lesson2_score = 0,
       lesson2_assessment_completed = false,
+      lesson2_current_section = 0,
+      lesson2_sections_done = '{}',
       last_activity = now(),
       updated_at = now()
     WHERE user_id = target_user_id
@@ -126,6 +136,8 @@ BEGIN
       lesson3_completed = false,
       lesson3_score = 0,
       lesson3_assessment_completed = false,
+      lesson3_current_section = 0,
+      lesson3_sections_done = '{}',
       last_activity = now(),
       updated_at = now()
     WHERE user_id = target_user_id
