@@ -46,7 +46,7 @@ export function LessonIntro({
       : 'Ready to start';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-background via-background to-muted/40">
+    <div className="min-h-screen flex flex-col items-center justify-start pt-12 md:pt-20 px-6 pb-10 bg-gradient-to-b from-background via-background to-muted/40">
       <div className="w-full max-w-xl text-center space-y-8 animate-fade-in">
         {/* Icon */}
         <div className="flex justify-center">

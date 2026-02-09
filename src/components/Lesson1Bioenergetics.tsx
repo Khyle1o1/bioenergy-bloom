@@ -267,6 +267,14 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
     }
   };
 
+  // Automatically mark the objectives section as done once it has been viewed.
+  // This keeps progress accurate without needing a separate confirmation button.
+  useEffect(() => {
+    if (currentSectionId === 'objectives') {
+      markDone('objectives');
+    }
+  }, [currentSectionId]);
+
   const allSectionsCompleted = LESSON1_SECTION_IDS.every((id) =>
     sectionsDone.includes(id)
   );
@@ -327,9 +335,6 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
                 </li>
               ))}
             </ul>
-            <button onClick={() => markDone('objectives')} className="btn-nature text-sm py-2 mt-4">
-              I understand the objectives
-            </button>
           </div>
         );
 
