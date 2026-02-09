@@ -128,6 +128,7 @@ const Index = () => {
             onComplete={handlePreTestComplete}
             completed={progress.preTestCompleted}
             score={progress.preTestScore}
+            onStartLesson1={() => setActiveTab('lesson1')}
           />
         );
       case 'lesson1':
