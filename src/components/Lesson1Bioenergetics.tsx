@@ -178,6 +178,7 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
     currentSectionIndex,
     currentSectionId,
     completedSectionsCount,
+    hasLessonEverStarted,
     isFirstSection,
     isLastSection,
     startLesson,
@@ -288,6 +289,8 @@ export function Lesson1Bioenergetics({ onComplete, completed }: Lesson1Props) {
         totalSections={LESSON1_SECTION_IDS.length}
         completedSections={completedSectionsCount}
         onStartLesson={startLesson}
+        isLessonCompleted={completed}
+        hasLessonEverStarted={hasLessonEverStarted}
       />
     );
   }

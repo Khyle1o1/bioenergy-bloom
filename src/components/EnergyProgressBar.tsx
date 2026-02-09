@@ -6,6 +6,8 @@ interface EnergyProgressBarProps {
 }
 
 export function EnergyProgressBar({ progress, showLabel = true }: EnergyProgressBarProps) {
+  const clampedProgress = Math.min(Math.max(progress, 0), 100);
+
   return (
     <div className="w-full">
       {showLabel && (
@@ -14,13 +16,13 @@ export function EnergyProgressBar({ progress, showLabel = true }: EnergyProgress
             <Zap className="w-4 h-4 text-sunlight" />
             Energy Level
           </span>
-          <span className="text-sm font-bold text-primary">{progress}%</span>
+          <span className="text-sm font-bold text-primary">{Math.round(clampedProgress)}%</span>
         </div>
       )}
       <div className="energy-bar">
         <div 
           className="energy-bar-fill"
-          style={{ width: `${progress}%` }}
+          style={{ width: `${clampedProgress}%` }}
         />
       </div>
     </div>

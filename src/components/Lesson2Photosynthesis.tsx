@@ -48,6 +48,7 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
     currentSectionIndex,
     currentSectionId,
     completedSectionsCount,
+    hasLessonEverStarted,
     isFirstSection,
     isLastSection,
     startLesson,
@@ -97,6 +98,8 @@ export function Lesson2Photosynthesis({ onComplete, completed }: Lesson2Props) {
         totalSections={LESSON2_SECTION_IDS.length}
         completedSections={completedSectionsCount}
         onStartLesson={startLesson}
+        isLessonCompleted={completed}
+        hasLessonEverStarted={hasLessonEverStarted}
       />
     );
   }

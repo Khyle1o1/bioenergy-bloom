@@ -112,6 +112,16 @@ export function useLessonNavigation({
   const currentSectionId = sectionIds[currentSectionIndex];
   const isCurrentSectionDone = sectionsDone.includes(currentSectionId);
   const completedSectionsCount = sectionsDone.length;
+  
+  // Check if the lesson has ever been started (has stored section position)
+  const hasLessonEverStarted = (() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved !== null;
+    } catch {
+      return false;
+    }
+  })();
 
   return {
     isLessonStarted,
@@ -119,6 +129,7 @@ export function useLessonNavigation({
     currentSectionId,
     isCurrentSectionDone,
     completedSectionsCount,
+    hasLessonEverStarted,
     isFirstSection: currentSectionIndex === 0,
     isLastSection: currentSectionIndex === totalSections - 1,
     startLesson,

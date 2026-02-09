@@ -43,12 +43,14 @@ export function PreTest({
   });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>(() => {
-    // Restore saved answers when the pre-test has already been completed so
-    // the learner can review their exact choices, even after navigation.
-    if (typeof window === 'undefined') {
+    // For a fresh or in-progress pre-test, start with no answers selected so
+    // nothing is pre-highlighted when the first question appears.
+    if (!completed || score === null || typeof window === 'undefined') {
       return Array(preTestQuestions.length).fill(-1);
     }
 
+    // Only restore saved answers for a finished pre-test, so the review screen
+    // can reconstruct the learner's exact choices without affecting new runs.
     try {
       const stored = window.localStorage.getItem('bioenergy_pretest_answers');
       if (stored) {
